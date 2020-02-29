@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Unload supersling daemon
+launchctl unload /Library/LaunchDaemons/xyz.willy.supersling.plist
