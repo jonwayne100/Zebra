@@ -1,10 +1,12 @@
 ARCHS = armv7 arm64 arm64e
-TARGET = iphone::10.3:8.0
+TARGET = iphone::10.3:9.0
 include $(THEOS)/makefiles/common.mk
 
 TOOL_NAME = supersling
-supersling_FILES = main.c
-supersling_INSTALL_PATH = /Applications/AUPM.app
-supersling_CODESIGN_FLAGS = -Sent.plist
+supersling_FILES = main.m
+supersling_INSTALL_PATH = /usr/libexec/zebra
 
 include $(THEOS_MAKE_PATH)/tool.mk
+
+after-stage::
+	$(ECHO_NOTHING)$(FAKEROOT) chown root:wheel $(THEOS_STAGING_DIR)/Library/LaunchDaemons/xyz.willy.supersling.plist$(ECHO_END)
