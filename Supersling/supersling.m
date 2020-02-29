@@ -17,12 +17,12 @@
     NSFileHandle *output = [outputPipe fileHandleForReading];
     [output waitForDataInBackgroundAndNotify];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
-                        
+                            
     NSPipe *errorPipe = [[NSPipe alloc] init];
     NSFileHandle *error = [errorPipe fileHandleForReading];
     [error waitForDataInBackgroundAndNotify];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
-                        
+                            
     [task setStandardOutput:outputPipe];
     [task setStandardError:errorPipe];
 
@@ -30,45 +30,43 @@
     [task waitUntilExit];
 }
 
+-(BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
+    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
+    newConnection.exportedObject = self;
+    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
+    self.xpcConnection = newConnection;
+
+    [newConnection resume];
+
+    return YES;
+}
+
 - (void)receivedData:(NSNotification *)notif {
+    NSLog(@"[Supersling] Received Data, forwarding to Zebra");
+    
     NSFileHandle *fh = [notif object];
     NSData *data = [fh availableData];
 
     if (data.length) {
         [fh waitForDataInBackgroundAndNotify];
         NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        
-        NSLog(@"[Supersling] Output: %@", str);
+
+        [[self.xpcConnection remoteObjectProxy] receivedData:str];
     }
 }
 
 - (void)receivedErrorData:(NSNotification *)notif {
+    NSLog(@"[Supersling] Received Error Data, forwarding to Zebra");
+    
     NSFileHandle *fh = [notif object];
     NSData *data = [fh availableData];
 
     if (data.length) {
         [fh waitForDataInBackgroundAndNotify];
         NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        NSLog(@"[Supersling] Error data: %@", str);
-        if ([str rangeOfString:@"warning"].location != NSNotFound) {
-            str = [str stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
-            
-            NSLog(@"[Supersling] Warning: %@", str);
-        } else if ([str rangeOfString:@"error"].location != NSNotFound) {
-            str = [str stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
 
-            NSLog(@"[Supersling] Error: %@", str);
-        }
+        [[self.xpcConnection remoteObjectProxy] receivedErrorData:str];
     }
-}
-
--(BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
-    NSXPCInterface *interface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
-    newConnection.exportedInterface = interface;
-    newConnection.exportedObject = self;
-    [newConnection resume];
-
-    return YES;
 }
 
 @end

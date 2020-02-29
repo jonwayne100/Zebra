@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <NSTask.h>
-#import <Console/ZBConsoleCommandDelegate.h>
+#import <Commands/ZBCommandDelegate.h>
 
 @import SafariServices;
 
@@ -31,8 +31,8 @@
 + (void)task:(NSTask *_Nullable)task withArguments:(NSArray *_Nullable)arguments;
 + (void)asRoot:(NSTask *_Nullable)task arguments:(NSArray *_Nullable)arguments;
 + (void)restartSpringBoard;
-+ (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBConsoleCommandDelegate> * _Nullable)observer;
-+ (void)runCommandInPath:(NSString *_Nonnull)command asRoot:(BOOL)sling observer:(NSObject <ZBConsoleCommandDelegate> *_Nullable)observer;
++ (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBCommandDelegate> * _Nullable)observer;
++ (void)runCommandInPath:(NSString *_Nonnull)command asRoot:(BOOL)sling observer:(NSObject <ZBCommandDelegate> *_Nullable)observer;
 
 + (void)openURL:(NSURL *_Nonnull)url delegate:(UIViewController <SFSafariViewControllerDelegate> *_Nonnull)delegate;
 

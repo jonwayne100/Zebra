@@ -7,10 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ZBCommandDelegate.h"
+#import "ZBSlingshot.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ZBCommand : NSObject
+@interface ZBCommand : NSObject <ZBSlingshotClient>
 - (void)runCommandAtPath:(NSString *)path arguments:(NSArray *)arguments asRoot:(BOOL)root;
 @end
 

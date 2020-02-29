@@ -7,7 +7,6 @@
 //
 
 #import "ZBCommand.h"
-#import "ZBSlingshot.h"
 
 @implementation ZBCommand
 
@@ -21,11 +20,14 @@
     return self;
 }
 
-- (void)runCommandAtPath:(NSString *)path arguments:(NSArray *)arguments asRoot:(BOOL)root {
-    NSXPCInterface *remoteInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
+- (void)runCommandAtPath:(NSString *_Nonnull)path arguments:(NSArray *)arguments asRoot:(BOOL)root {
     NSXPCConnection *xpcConnection = [[NSXPCConnection alloc] initWithMachServiceName:@"xyz.willy.supersling" options:NSXPCConnectionPrivileged];
     
+    NSXPCInterface *remoteInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
     xpcConnection.remoteObjectInterface = remoteInterface;
+    
+    xpcConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
+    xpcConnection.exportedObject = self;
     
     xpcConnection.interruptionHandler = ^{
         NSLog(@"[Zebra] Communication with Supersling terminated");
@@ -38,6 +40,22 @@
     [xpcConnection resume];
     
     [xpcConnection.remoteObjectProxy runCommandAtPath:path arguments:arguments asRoot:root];
+}
+
+- (void)receivedData:(NSString *)data {
+    NSLog(@"[Zebra] Received Data from su/sling: %@", data);
+}
+
+- (void)receivedErrorData:(NSString *)data {
+    if ([data rangeOfString:@"warning"].location != NSNotFound) {
+        data = [data stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
+            
+        NSLog(@"[Zebra] Received Warning Data from su/sling: %@", data);
+    } else if ([data rangeOfString:@"error"].location != NSNotFound) {
+        data = [data stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
+
+        NSLog(@"[Zebra] Received Error Data from su/sling: %@", data);
+    }
 }
 
 @end

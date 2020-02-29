@@ -13,12 +13,12 @@
 #import <UIKit/UIKit.h>
 #import <Downloads/ZBDownloadDelegate.h>
 #import <Database/ZBDatabaseDelegate.h>
-#import <ZBConsoleCommandDelegate.h>
+#import <ZBCommandDelegate.h>
 #import <ZBLogLevel.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ZBConsoleViewController : UIViewController <ZBDownloadDelegate, ZBDatabaseDelegate, ZBConsoleCommandDelegate, UIGestureRecognizerDelegate>
+@interface ZBConsoleViewController : UIViewController <ZBDownloadDelegate, ZBDatabaseDelegate, ZBCommandDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic) BOOL externalInstall;
 @property (strong, nonatomic) NSString *externalFilePath;
