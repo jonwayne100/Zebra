@@ -10,8 +10,9 @@
 #define ZBCommandDelegate_h
 
 @protocol ZBCommandDelegate
-- (void)receivedData:(NSNotification *_Nullable)notif;
-- (void)receivedErrorData:(NSNotification *_Nullable)notif;
+- (void)receivedMessage:(NSString *_Nonnull)notif;
+- (void)receivedWarning:(NSString *_Nonnull)notif;
+- (void)receivedError:(NSString *_Nonnull)notif;
 @end
 
 

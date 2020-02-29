@@ -6,8 +6,6 @@
 //  Copyright © 2020 Wilson Styres. All rights reserved.
 //
 
-#import "ZBCommandDelegate.h"
-
 #ifndef ZBSlingshot_h
 #define ZBSlingshot_h
 

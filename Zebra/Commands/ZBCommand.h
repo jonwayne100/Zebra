@@ -13,6 +13,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ZBCommand : NSObject <ZBSlingshotClient>
+@property id <ZBCommandDelegate> delegate;
+- (id)initWithDelegate:(id <ZBCommandDelegate> _Nullable)delegate;
 - (void)runCommandAtPath:(NSString *)path arguments:(NSArray *)arguments asRoot:(BOOL)root;
 @end
 

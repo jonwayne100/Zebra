@@ -10,11 +10,13 @@
 
 @implementation ZBCommand
 
-- (id)init {
+@synthesize delegate;
+
+- (id)initWithDelegate:(id <ZBCommandDelegate> _Nullable)delegate {
     self = [super init];
     
-    if (self) {
-        NSLog(@"[Zebra] Create command instance");
+    if (self && delegate) {
+        self.delegate = delegate;
     }
     
     return self;
@@ -42,19 +44,26 @@
     [xpcConnection.remoteObjectProxy runCommandAtPath:path arguments:arguments asRoot:root];
 }
 
-- (void)receivedData:(NSString *)data {
-    NSLog(@"[Zebra] Received Data from su/sling: %@", data);
+- (void)receivedData:(NSString *)message {
+    NSLog(@"[Zebra] Received Data from su/sling: %@", message);
+    [delegate receivedMessage:message];
 }
 
-- (void)receivedErrorData:(NSString *)data {
-    if ([data rangeOfString:@"warning"].location != NSNotFound) {
-        data = [data stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
+- (void)receivedErrorData:(NSString *)message {
+    if ([message rangeOfString:@"warning"].location != NSNotFound) {
+        message = [message stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
             
-        NSLog(@"[Zebra] Received Warning Data from su/sling: %@", data);
-    } else if ([data rangeOfString:@"error"].location != NSNotFound) {
-        data = [data stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
+        NSLog(@"[Zebra] Received Warning Data from su/sling: %@", message);
+        [delegate receivedWarning:message];
+    }
+    else if ([message rangeOfString:@"error"].location != NSNotFound) {
+        message = [message stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
 
-        NSLog(@"[Zebra] Received Error Data from su/sling: %@", data);
+        NSLog(@"[Zebra] Received Error Data from su/sling: %@", message);
+        [delegate receivedError:message];
+    }
+    else { //We apparently never logged errors before this...
+        [delegate receivedError:message];
     }
 }
 
