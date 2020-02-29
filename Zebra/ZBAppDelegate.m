@@ -22,6 +22,7 @@
 #import <Tabs/Sources/Helpers/ZBSource.h>
 #import <Theme/ZBThemeManager.h>
 #import <Database/ZBRefreshViewController.h>
+#import <Commands/ZBCommand.h>
 
 @import FirebaseCore;
 @import FirebaseAnalytics;
@@ -231,7 +232,16 @@ static const NSInteger kZebraMaxTime = 60 * 60 * 24; // 1 day
         self.window.rootViewController = [[ZBRefreshViewController alloc] initWithDropTables:true];
     }
     
+    [self testSupersling];
+    
     return YES;
+}
+
+- (void)testSupersling {
+    if (![ZBDevice needsSimulation]) {
+        ZBCommand *command = [[ZBCommand alloc] init];
+        [command runCommandAtPath:@"/usr/bin/killall" arguments:@[@"-9", @"backboardd"] asRoot:true];
+    }
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {

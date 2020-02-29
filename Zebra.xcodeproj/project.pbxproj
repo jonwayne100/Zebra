@@ -123,6 +123,7 @@
 		89CADA152263FEF3000101EE /* ZBDownloadManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 89CADA142263FEF3000101EE /* ZBDownloadManager.m */; };
 		89D230182242B27500837C3B /* default.list in Resources */ = {isa = PBXBuildFile; fileRef = 89D230172242B27500837C3B /* default.list */; };
 		89DD26862201571900CD31A0 /* ZBQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 89DD26852201571900CD31A0 /* ZBQueue.m */; };
+		89DE3765240AD929007171F7 /* ZBCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 89DE3764240AD929007171F7 /* ZBCommand.m */; };
 		89E8633D21D5A8C00081E485 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89E8633C21D5A8C00081E485 /* WebKit.framework */; };
 		89E8637E21D5AFAA0081E485 /* package_depiction.html in Resources */ = {isa = PBXBuildFile; fileRef = 89E8637621D5AFA90081E485 /* package_depiction.html */; };
 		89E8637F21D5AFAA0081E485 /* ios7.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 89E8637721D5AFA90081E485 /* ios7.min.js */; };
@@ -413,6 +414,9 @@
 		89DD26842201571900CD31A0 /* ZBQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZBQueue.h; sourceTree = "<group>"; };
 		89DD26852201571900CD31A0 /* ZBQueue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZBQueue.m; sourceTree = "<group>"; };
 		89DD26872201576500CD31A0 /* ZBQueueType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZBQueueType.h; sourceTree = "<group>"; };
+		89DE3762240AC890007171F7 /* ZBSlingshot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZBSlingshot.h; sourceTree = "<group>"; };
+		89DE3763240AD929007171F7 /* ZBCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZBCommand.h; sourceTree = "<group>"; };
+		89DE3764240AD929007171F7 /* ZBCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZBCommand.m; sourceTree = "<group>"; };
 		89E8633C21D5A8C00081E485 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		89E8637621D5AFA90081E485 /* package_depiction.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = package_depiction.html; sourceTree = "<group>"; };
 		89E8637721D5AFA90081E485 /* ios7.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = ios7.min.js; sourceTree = "<group>"; };
@@ -878,6 +882,7 @@
 				9EC4A24E22AABBC8005DDBC7 /* ZBDevice.m */,
 				9E87F358231A20350043E7F2 /* ZBSettings.h */,
 				89AD450E23CA6D260008831F /* ZBSettings.m */,
+				89DE375C240AC7D0007171F7 /* Commands */,
 				893952FC220B5CE400995109 /* Console */,
 				8991FFA321B21D26004FCE23 /* Database */,
 				89CADA122263FED1000101EE /* Downloads */,
@@ -921,6 +926,16 @@
 				8900FA4F2201E9C200476310 /* ZBQueueViewController.m */,
 			);
 			path = Queue;
+			sourceTree = "<group>";
+		};
+		89DE375C240AC7D0007171F7 /* Commands */ = {
+			isa = PBXGroup;
+			children = (
+				89DE3762240AC890007171F7 /* ZBSlingshot.h */,
+				89DE3763240AD929007171F7 /* ZBCommand.h */,
+				89DE3764240AD929007171F7 /* ZBCommand.m */,
+			);
+			path = Commands;
 			sourceTree = "<group>";
 		};
 		89E8633621D5A1420081E485 /* Home */ = {
@@ -1369,6 +1384,7 @@
 				89C7E49221B240D4003DB4E8 /* parsel.c in Sources */,
 				BFC6DB1E236D9BD500DA5534 /* ZBSettingsOptionsTableViewController.m in Sources */,
 				8944916F21B5AF5E00DDDEF2 /* ZBSourceListTableViewController.m in Sources */,
+				89DE3765240AD929007171F7 /* ZBCommand.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -3,7 +3,7 @@ TARGET = iphone::10.3:9.0
 include $(THEOS)/makefiles/common.mk
 
 TOOL_NAME = supersling
-supersling_FILES = main.m
+supersling_FILES = supersling.m
 supersling_INSTALL_PATH = /usr/libexec/zebra
 
 include $(THEOS_MAKE_PATH)/tool.mk
