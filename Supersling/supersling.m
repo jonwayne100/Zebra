@@ -12,8 +12,54 @@
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:path];
     [task setArguments:arguments];
+                        
+    NSPipe *outputPipe = [[NSPipe alloc] init];
+    NSFileHandle *output = [outputPipe fileHandleForReading];
+    [output waitForDataInBackgroundAndNotify];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
+                        
+    NSPipe *errorPipe = [[NSPipe alloc] init];
+    NSFileHandle *error = [errorPipe fileHandleForReading];
+    [error waitForDataInBackgroundAndNotify];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
+                        
+    [task setStandardOutput:outputPipe];
+    [task setStandardError:errorPipe];
 
     [task launch];
+    [task waitUntilExit];
+}
+
+- (void)receivedData:(NSNotification *)notif {
+    NSFileHandle *fh = [notif object];
+    NSData *data = [fh availableData];
+
+    if (data.length) {
+        [fh waitForDataInBackgroundAndNotify];
+        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        
+        NSLog(@"[Supersling] Output: %@", str);
+    }
+}
+
+- (void)receivedErrorData:(NSNotification *)notif {
+    NSFileHandle *fh = [notif object];
+    NSData *data = [fh availableData];
+
+    if (data.length) {
+        [fh waitForDataInBackgroundAndNotify];
+        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSLog(@"[Supersling] Error data: %@", str);
+        if ([str rangeOfString:@"warning"].location != NSNotFound) {
+            str = [str stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
+            
+            NSLog(@"[Supersling] Warning: %@", str);
+        } else if ([str rangeOfString:@"error"].location != NSNotFound) {
+            str = [str stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
+
+            NSLog(@"[Supersling] Error: %@", str);
+        }
+    }
 }
 
 -(BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {

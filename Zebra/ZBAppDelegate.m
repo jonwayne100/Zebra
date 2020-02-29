@@ -240,7 +240,7 @@ static const NSInteger kZebraMaxTime = 60 * 60 * 24; // 1 day
 - (void)testSupersling {
     if (![ZBDevice needsSimulation]) {
         ZBCommand *command = [[ZBCommand alloc] init];
-        [command runCommandAtPath:@"/usr/bin/killall" arguments:@[@"-9", @"backboardd"] asRoot:true];
+        [command runCommandAtPath:@"/usr/bin/apt-get" arguments:@[@"update"] asRoot:true];
     }
 }
 
