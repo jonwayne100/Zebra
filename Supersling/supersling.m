@@ -6,9 +6,7 @@
 
 @implementation ZBSlingshot
 
-- (void)runCommandAtPath:(NSString *)path arguments:(NSArray *)arguments asRoot:(BOOL)root {
-    NSLog(@"[Supersling] Running %@ as %@ with arguments %@", path, root ? @"root" : @"mobile", arguments);
-
+- (void)runCommandAtPath:(NSString *)path arguments:(NSArray *)arguments {
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:path];
     [task setArguments:arguments];
@@ -30,17 +28,6 @@
     [task waitUntilExit];
 
     [[self.xpcConnection remoteObjectProxy] finished];
-}
-
--(BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
-    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
-    newConnection.exportedObject = self;
-    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
-    self.xpcConnection = newConnection;
-
-    [newConnection resume];
-
-    return YES;
 }
 
 - (void)receivedData:(NSNotification *)notif {
@@ -74,6 +61,17 @@
             [[self.xpcConnection remoteObjectProxy] receivedErrorData:segment];
         }
     }
+}
+
+-(BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
+    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
+    newConnection.exportedObject = self;
+    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
+    self.xpcConnection = newConnection;
+
+    [newConnection resume];
+
+    return YES;
 }
 
 @end

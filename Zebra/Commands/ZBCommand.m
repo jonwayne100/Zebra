@@ -46,7 +46,7 @@
         [ZBAppDelegate sendErrorToTabController:error.localizedDescription];
     }];
     
-    [slingshot runCommandAtPath:path arguments:arguments asRoot:root];
+    [slingshot runCommandAtPath:path arguments:arguments];
 }
 
 - (void)receivedData:(NSString *)message {

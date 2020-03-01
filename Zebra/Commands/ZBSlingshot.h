@@ -11,7 +11,7 @@
 
 @protocol ZBSlingshotServer
 
-- (void)runCommandAtPath:(NSString *_Nonnull)path arguments:(NSArray *_Nonnull)arguments asRoot:(BOOL)root;
+- (void)runCommandAtPath:(NSString *_Nonnull)path arguments:(NSArray *_Nonnull)arguments;
 
 @end
 
