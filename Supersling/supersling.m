@@ -1,8 +1,12 @@
 #include <Foundation/Foundation.h>
 #include <Foundation/NSXPCListener.h>
 #include <Foundation/NSXPCInterface.h>
+#include <sys/stat.h>
+
 #include "../Zebra/Commands/ZBSlingshot.h"
 #include "../Zebra/Headers/NSTask.h"
+
+int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 
 @implementation ZBSlingshot
 
@@ -69,9 +73,34 @@
     newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
     self.xpcConnection = newConnection;
 
-    [newConnection resume];
+    struct stat template;
+    if (lstat("/Applications/Zebra.app/Zebra", &template) == -1) { //Make sure the Zebra binary actually exists, and get our template
+        NSLog(@"[Supersling] THE TRUE AND NEO CHAOS!");
+        [[self.xpcConnection remoteObjectProxy] receivedData:@"THE TRUE AND NEO CHAOS"];
 
-    return YES;
+        return NO;
+    }
+    else {
+        pid_t pid = newConnection.processIdentifier; //Get the process identifier
+        NSLog(@"[Supersling] (DEBUG) Process Identifier is %d", pid);
+
+        char buffer[PATH_MAX];
+        int ret = proc_pidpath(pid, buffer, sizeof(buffer)); //Get the executable path of the parent process
+        NSLog(@"[Supersling] (DEBUG) Process Path is %s", buffer);
+
+        struct stat response;
+        lstat(buffer, &response); //Use the process path and get stat information from that
+
+        if (ret < 1 || (template.st_dev != response.st_dev || template.st_ino != response.st_ino)) { //If the files are identical, we can execute the command
+            NSLog(@"[Supersling] CHAOS, CHAOS!");
+            [[self.xpcConnection remoteObjectProxy] receivedData:@"CHAOS, CHAOS!"]  ;
+
+            return NO;
+        }
+
+        [newConnection resume];
+        return YES;
+    }
 }
 
 @end
