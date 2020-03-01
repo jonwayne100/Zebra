@@ -35,8 +35,6 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 }
 
 - (void)receivedData:(NSNotification *)notif {
-    NSLog(@"[Supersling] Received Data, forwarding to Zebra");
-    
     NSFileHandle *fh = [notif object];
     NSData *data = [fh availableData];
 
@@ -49,8 +47,6 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 }
 
 - (void)receivedErrorData:(NSNotification *)notif {
-    NSLog(@"[Supersling] Received Error Data, forwarding to Zebra");
-    
     NSFileHandle *fh = [notif object];
     NSData *data = [fh availableData];
 
@@ -82,11 +78,9 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
     }
     else {
         pid_t pid = newConnection.processIdentifier; //Get the process identifier
-        NSLog(@"[Supersling] (DEBUG) Process Identifier is %d", pid);
 
         char buffer[PATH_MAX];
         int ret = proc_pidpath(pid, buffer, sizeof(buffer)); //Get the executable path of the parent process
-        NSLog(@"[Supersling] (DEBUG) Process Path is %s", buffer);
 
         struct stat response;
         lstat(buffer, &response); //Use the process path and get stat information from that
