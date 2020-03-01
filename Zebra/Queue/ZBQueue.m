@@ -232,10 +232,10 @@
         baseCommand = @[@"/usr/bin/dpkg"];
     }
     else if ([[ZBDevice packageManagementBinary] isEqualToString:@"/usr/bin/apt"]) {
-        baseCommand = @[@"/usr/bin/apt", @"-yq", @"--allow-downgrades", @"--allow-change-held-packages", @"-oApt::Get::HideAutoRemove=true", @"-oquiet::NoProgress=true", @"-oquiet::NoStatistic=true", @"--"];
+        baseCommand = @[@"/usr/bin/apt", @"-yq", @"--allow-downgrades", @"--allow-change-held-packages", @"-oApt::Get::HideAutoRemove=true", @"-oquiet::NoProgress=true", @"-oquiet::NoStatistic=true"];
     }
     else {
-        baseCommand = @[@"/usr/bin/apt", @"-yq", @"--allow-downgrades", @"--allow-change-held-packages", @"-oApt::Get::HideAutoRemove=true", @"-oquiet::NoProgress=true", @"-oquiet::NoStatistic=true", @"--"];
+        baseCommand = @[@"/usr/bin/apt", @"-yq", @"--allow-downgrades", @"--allow-change-held-packages", @"-oApt::Get::HideAutoRemove=true", @"-oquiet::NoProgress=true", @"-oquiet::NoStatistic=true"];
     }
     
     NSString *binary = baseCommand[0];
