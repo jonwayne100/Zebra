@@ -618,11 +618,11 @@
                 font = [UIFont fontWithName:@"CourierNewPS-BoldMT" size:12.0];
                 break;
             case ZBLogLevelError:
-                color = [UIColor redColor];
+                color = [UIColor systemRedColor];
                 font = [UIFont fontWithName:@"CourierNewPS-BoldMT" size:12.0];
                 break;
             case ZBLogLevelWarning:
-                color = [UIColor yellowColor];
+                color = [UIColor systemYellowColor];
                 font = [UIFont fontWithName:@"CourierNewPSMT" size:12.0];
                 break;
             default:
