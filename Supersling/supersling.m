@@ -10,26 +10,50 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 
 @implementation ZBSlingshot
 
-- (void)runCommandAtPath:(NSString *)path arguments:(NSArray *)arguments {
-    NSTask *task = [[NSTask alloc] init];
-    [task setLaunchPath:path];
-    [task setArguments:arguments];
-                        
-    NSPipe *outputPipe = [[NSPipe alloc] init];
-    NSFileHandle *output = [outputPipe fileHandleForReading];
-    [output waitForDataInBackgroundAndNotify];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
-                            
-    NSPipe *errorPipe = [[NSPipe alloc] init];
-    NSFileHandle *error = [errorPipe fileHandleForReading];
-    [error waitForDataInBackgroundAndNotify];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
-                            
-    [task setStandardOutput:outputPipe];
-    [task setStandardError:errorPipe];
+@synthesize outputPipe;
+@synthesize errorPipe;
 
-    [task launch];
-    [task waitUntilExit];
+- (void)executeCommands:(NSArray <NSArray <NSString *> *> *)commands {
+    NSMutableArray *tasks = [NSMutableArray new];
+    for (NSArray *command in commands) {
+        NSLog(@"[Supersling] Command Received: %@", command);
+
+        NSTask *task = [[NSTask alloc] init];
+        [task setLaunchPath:command[0]];
+        [task setArguments:[command subarrayWithRange:NSMakeRange(1, command.count - 1)]];
+                            
+        if (!outputPipe) outputPipe = [[NSPipe alloc] init];
+        NSFileHandle *output = [outputPipe fileHandleForReading];
+        [output waitForDataInBackgroundAndNotify];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
+                                
+        if (!errorPipe) errorPipe = [[NSPipe alloc] init];
+        NSFileHandle *error = [errorPipe fileHandleForReading];
+        [error waitForDataInBackgroundAndNotify];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
+                        
+        [task setStandardOutput:outputPipe];
+        [task setStandardError:errorPipe];
+
+        [tasks addObject:task];
+    }
+
+    for (NSTask *task in tasks) {
+        @try {
+            [task launch];
+            [task waitUntilExit];
+
+            int terminationStatus = [task terminationStatus];
+            if (terminationStatus != 0) {
+                NSString *message = [NSString stringWithFormat:@"ERROR: Task failed with error code %d", terminationStatus];
+                [[self.xpcConnection remoteObjectProxy] receivedErrorData:message];
+            }
+        }
+        @catch (NSException *e) {
+            NSString *message = [NSString stringWithFormat:@"ERROR: Task failed with reason: %@", e.reason];
+            [[self.xpcConnection remoteObjectProxy] receivedErrorData:message];
+        }
+    }
 
     [[self.xpcConnection remoteObjectProxy] finished];
 }

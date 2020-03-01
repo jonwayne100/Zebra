@@ -9,9 +9,11 @@
 #ifndef ZBSlingshot_h
 #define ZBSlingshot_h
 
+NS_ASSUME_NONNULL_BEGIN
+
 @protocol ZBSlingshotServer
 
-- (void)runCommandAtPath:(NSString *_Nonnull)path arguments:(NSArray *_Nonnull)arguments;
+- (void)executeCommands:(NSArray <NSArray <NSString *> *> *)commands;
 
 @end
 
@@ -25,8 +27,12 @@
 
 @interface ZBSlingshot : NSObject <NSXPCListenerDelegate, ZBSlingshotServer>
 
-@property (strong) NSXPCConnection *_Nullable xpcConnection;
+@property (strong) NSXPCConnection *xpcConnection;
+@property (strong) NSPipe *outputPipe;
+@property (strong) NSPipe *errorPipe;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif /* ZBSlingshotProtocol_h */

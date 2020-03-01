@@ -267,7 +267,7 @@
             }
             
             if ([removeCommand count] != commandCount) {
-                [commands addObject:@[@(ZBStageRemove)]];
+//                [commands addObject:@[@(ZBStageRemove)]];
                 [commands addObject:removeCommand];
             }
         }
@@ -302,7 +302,7 @@
             }
             
             if ([removeCommand count] != commandCount) {
-                [commands addObject:@[@(ZBStageRemove)]];
+//                [commands addObject:@[@(ZBStageRemove)]];
                 [commands addObject:removeCommand];
             }
         }
@@ -344,13 +344,13 @@
         }
         
         if ([installCommand count] != commandCount) {
-            [commands addObject:@[@(ZBStageInstall)]];
+//            [commands addObject:@[@(ZBStageInstall)]];
             [commands addObject:installCommand];
         }
     }
     
     if ([self queueHasPackages:ZBQueueTypeReinstall]) {
-        [commands addObject:@[@(ZBStageReinstall)]];
+//        [commands addObject:@[@(ZBStageReinstall)]];
         if ([binary isEqualToString:@"/usr/bin/apt"]) {
             NSMutableArray *reinstallCommand = [baseCommand mutableCopy];
             [reinstallCommand addObject:@"install"];

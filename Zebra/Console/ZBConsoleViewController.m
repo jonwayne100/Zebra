@@ -232,38 +232,34 @@
                 [installedPackageIdentifiers addObject:[package identifier]];
             }
             
-            for (NSArray *command in actions) {
-                if ([command count] == 1) {
-                    [self updateStage:(ZBStage)[command[0] intValue]];
-                }
-                else {
-                    if (currentStage == ZBStageRemove) {
-                        for (int i = COMMAND_START; i < [command count]; ++i) {
-                            NSString *packageID = command[i];
-                            if (![self isValidPackageID:packageID]) continue;
-                            NSLog(@"[Zebra] Valid remove package id %@", packageID);
-                            
-                            NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageID];
-                            if (bundlePath) {
-                                NSLog(@"[Zebra] %@ has an app bundle", bundlePath);
-                                updateIconCache = YES;
-                                [applicationBundlePaths addObject:bundlePath];
-                            }
-
-                            if (!respringRequired) {
-                                respringRequired = [ZBPackage respringRequiredFor:packageID];
-                                NSLog(@"[Zebra] Respring Required? %@", respringRequired ? @"Yes" : @"No");
-                            }
-                        }
-                    }
-                    
-                    zebraRestartRequired = queue.zebraPath || queue.removingZebra;
-                    
-                    ZBCommand *commands = [[ZBCommand alloc] initWithDelegate:self];
-                    if (![ZBDevice needsSimulation]) {
-                        [commands runCommandAtPath:command[0] arguments:[command subarrayWithRange:NSMakeRange(1, command.count - 1)] asRoot:true];
-                        
-                        
+            ZBCommand *command = [[ZBCommand alloc] initWithDelegate:self];
+            [command executeCommands:actions asRoot:true];
+            
+//            for (NSArray *command in actions) {
+//                if ([command count] == 1) {
+//                    [self updateStage:(ZBStage)[command[0] intValue]];
+//                }
+//                else {
+//                    if (currentStage == ZBStageRemove) {
+//                        for (int i = COMMAND_START; i < [command count]; ++i) {
+//                            NSString *packageID = command[i];
+//                            if (![self isValidPackageID:packageID]) continue;
+//
+//                            NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageID];
+//                            if (bundlePath) {
+//                                updateIconCache = YES;
+//                                [applicationBundlePaths addObject:bundlePath];
+//                            }
+//
+//                            if (!respringRequired) {
+//                                respringRequired = [ZBPackage respringRequiredFor:packageID];
+//                            }
+//                        }
+//                    }
+//
+//                    zebraRestartRequired = queue.zebraPath || queue.removingZebra;
+//
+//                    if (![ZBDevice needsSimulation]) {
 //                        ZBLog(@"[Zebra] Executing commands...");
 //                        NSTask *task = [[NSTask alloc] init];
 //                        [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
@@ -307,17 +303,17 @@
 //                            NSLog(@"[Zebra] %@", message);
 //                            [self writeToConsole:message atLevel:ZBLogLevelError];
 //                        }
-                    }
-                    else {
-                        [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
-                        for (int i = COMMAND_START; i < [command count]; ++i) {
-                            NSString *packageID = command[i];
-                            if (![self isValidPackageID:packageID]) continue;
-                            [self writeToConsole:[packageID lastPathComponent] atLevel:ZBLogLevelDescript];
-                        }
-                    }
-                }
-            }
+//                    }
+//                    else {
+//                        [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
+//                        for (int i = COMMAND_START; i < [command count]; ++i) {
+//                            NSString *packageID = command[i];
+//                            if (![self isValidPackageID:packageID]) continue;
+//                            [self writeToConsole:[packageID lastPathComponent] atLevel:ZBLogLevelDescript];
+//                        }
+//                    }
+//                }
+//            }
             
             for (int i = 0; i < [installedPackageIdentifiers count]; i++) {
                 NSString *packageIdentifier = installedPackageIdentifiers[i];
@@ -557,17 +553,17 @@
 
 - (void)removeAllDebs {
     ZBLog(@"[Zebra] Removing all debs");
-    NSDirectoryEnumerator *enumerator = [[NSFileManager defaultManager] enumeratorAtPath:[ZBAppDelegate debsLocation]];
-    NSString *file;
-
-    while (file = [enumerator nextObject]) {
-        NSError *error = nil;
-        BOOL result = [[NSFileManager defaultManager] removeItemAtPath:[[ZBAppDelegate debsLocation] stringByAppendingPathComponent:file] error:&error];
-
-        if (!result && error) {
-            NSLog(@"[Zebra] Error while removing %@: %@", file, error);
-        }
-    }
+//    NSDirectoryEnumerator *enumerator = [[NSFileManager defaultManager] enumeratorAtPath:[ZBAppDelegate debsLocation]];
+//    NSString *file;
+//
+//    while (file = [enumerator nextObject]) {
+//        NSError *error = nil;
+//        BOOL result = [[NSFileManager defaultManager] removeItemAtPath:[[ZBAppDelegate debsLocation] stringByAppendingPathComponent:file] error:&error];
+//
+//        if (!result && error) {
+//            NSLog(@"[Zebra] Error while removing %@: %@", file, error);
+//        }
+//    }
 }
 
 #pragma mark - UI Updates
