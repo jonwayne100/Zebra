@@ -19,6 +19,7 @@
 #import <ZBLog.h>
 #import <ZBSettings.h>
 #import <UIColor+GlobalColors.h>
+#import <Commands/ZBCommand.h>
 
 #include <sysexits.h>
 
@@ -102,10 +103,10 @@
     [super viewDidLoad];
     self.title = NSLocalizedString(@"Console", @"");
     
-    NSError *error;
-    if ([ZBDevice isSlingshotBroken:&error]) {
-        [ZBAppDelegate sendAlertFrom:self message:error.localizedDescription];
-    }
+//    NSError *error;
+//    if ([ZBDevice isSlingshotBroken:&error]) {
+//        [ZBAppDelegate sendAlertFrom:self message:error.localizedDescription];
+//    }
     
     [self setupView];
 }
@@ -182,25 +183,25 @@
 
 - (void)performTasks {
     if (localInstallPath != NULL) {
-        NSTask *task = [[NSTask alloc] init];
-        [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
-        [task setArguments:@[@"dpkg", @"-i", localInstallPath]];
-        
-        NSPipe *outputPipe = [[NSPipe alloc] init];
-        NSFileHandle *output = [outputPipe fileHandleForReading];
-        [output waitForDataInBackgroundAndNotify];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
-        
-        NSPipe *errorPipe = [[NSPipe alloc] init];
-        NSFileHandle *error = [errorPipe fileHandleForReading];
-        [error waitForDataInBackgroundAndNotify];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
-        
-        [task setStandardOutput:outputPipe];
-        [task setStandardError:errorPipe];
-        
-        [task launch];
-        [task waitUntilExit];
+//        NSTask *task = [[NSTask alloc] init];
+//        [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
+//        [task setArguments:@[@"dpkg", @"-i", localInstallPath]];
+//
+//        NSPipe *outputPipe = [[NSPipe alloc] init];
+//        NSFileHandle *output = [outputPipe fileHandleForReading];
+//        [output waitForDataInBackgroundAndNotify];
+//        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
+//
+//        NSPipe *errorPipe = [[NSPipe alloc] init];
+//        NSFileHandle *error = [errorPipe fileHandleForReading];
+//        [error waitForDataInBackgroundAndNotify];
+//        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
+//
+//        [task setStandardOutput:outputPipe];
+//        [task setStandardError:errorPipe];
+//
+//        [task launch];
+//        [task waitUntilExit];
         
         [self refreshLocalPackages];
         [self removeAllDebs];
@@ -258,50 +259,54 @@
                     
                     zebraRestartRequired = queue.zebraPath || queue.removingZebra;
                     
+                    ZBCommand *commands = [[ZBCommand alloc] initWithDelegate:self];
                     if (![ZBDevice needsSimulation]) {
-                        ZBLog(@"[Zebra] Executing commands...");
-                        NSTask *task = [[NSTask alloc] init];
-                        [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
-                        [task setArguments:command];
+                        [commands runCommandAtPath:command[0] arguments:[command subarrayWithRange:NSMakeRange(1, command.count - 1)] asRoot:true];
                         
-                        NSPipe *outputPipe = [[NSPipe alloc] init];
-                        NSFileHandle *output = [outputPipe fileHandleForReading];
-                        [output waitForDataInBackgroundAndNotify];
-                        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
                         
-                        NSPipe *errorPipe = [[NSPipe alloc] init];
-                        NSFileHandle *error = [errorPipe fileHandleForReading];
-                        [error waitForDataInBackgroundAndNotify];
-                        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
-                        
-                        [task setStandardOutput:outputPipe];
-                        [task setStandardError:errorPipe];
-                        
-                        @try {
-                            [task launch];
-                            [task waitUntilExit];
-                            
-                            int terminationStatus = [task terminationStatus];
-                            switch (terminationStatus) {
-                                case EX_NOPERM:
-                                    [self writeToConsole:NSLocalizedString(@"Zebra was unable to complete this command because it does not have the proper permissions. Please verify the permissions located at /usr/libexec/zebra/supersling and report this issue on GitHub.", @"") atLevel:ZBLogLevelError];
-                                    break;
-                                case EDEADLK:
-                                    [self writeToConsole:NSLocalizedString(@"ERROR: Unable to lock status file. Please try again.", @"") atLevel:ZBLogLevelError];
-                                    break;
-                                case 85: //ERESTART apparently
-                                    [self writeToConsole:NSLocalizedString(@"ERROR: Process must be restarted. Please try again.", @"") atLevel:ZBLogLevelError];
-                                    break;
-                                default:
-                                    break;
-                            }
-                        } @catch (NSException *e) {
-                            NSString *message = [NSString stringWithFormat:@"Could not complete %@ process. Reason: %@.", [ZBDevice packageManagementBinary],  e.reason];
-                            
-                            CLS_LOG(@"%@", message);
-                            NSLog(@"[Zebra] %@", message);
-                            [self writeToConsole:message atLevel:ZBLogLevelError];
-                        }
+//                        ZBLog(@"[Zebra] Executing commands...");
+//                        NSTask *task = [[NSTask alloc] init];
+//                        [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
+//                        [task setArguments:command];
+//
+//                        NSPipe *outputPipe = [[NSPipe alloc] init];
+//                        NSFileHandle *output = [outputPipe fileHandleForReading];
+//                        [output waitForDataInBackgroundAndNotify];
+//                        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
+//
+//                        NSPipe *errorPipe = [[NSPipe alloc] init];
+//                        NSFileHandle *error = [errorPipe fileHandleForReading];
+//                        [error waitForDataInBackgroundAndNotify];
+//                        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
+//
+//                        [task setStandardOutput:outputPipe];
+//                        [task setStandardError:errorPipe];
+//
+//                        @try {
+//                            [task launch];
+//                            [task waitUntilExit];
+//
+//                            int terminationStatus = [task terminationStatus];
+//                            switch (terminationStatus) {
+//                                case EX_NOPERM:
+//                                    [self writeToConsole:NSLocalizedString(@"Zebra was unable to complete this command because it does not have the proper permissions. Please verify the permissions located at /usr/libexec/zebra/supersling and report this issue on GitHub.", @"") atLevel:ZBLogLevelError];
+//                                    break;
+//                                case EDEADLK:
+//                                    [self writeToConsole:NSLocalizedString(@"ERROR: Unable to lock status file. Please try again.", @"") atLevel:ZBLogLevelError];
+//                                    break;
+//                                case 85: //ERESTART apparently
+//                                    [self writeToConsole:NSLocalizedString(@"ERROR: Process must be restarted. Please try again.", @"") atLevel:ZBLogLevelError];
+//                                    break;
+//                                default:
+//                                    break;
+//                            }
+//                        } @catch (NSException *e) {
+//                            NSString *message = [NSString stringWithFormat:@"Could not complete %@ process. Reason: %@.", [ZBDevice packageManagementBinary],  e.reason];
+//
+//                            CLS_LOG(@"%@", message);
+//                            NSLog(@"[Zebra] %@", message);
+//                            [self writeToConsole:message atLevel:ZBLogLevelError];
+//                        }
                     }
                     else {
                         [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
@@ -347,49 +352,49 @@
                 }
                 
                 if (![ZBDevice needsSimulation]) {
-                    NSTask *task = [[NSTask alloc] init];
-                    [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
-                    [task setArguments:baseCommand];
-                    
-                    NSPipe *outputPipe = [[NSPipe alloc] init];
-                    NSFileHandle *output = [outputPipe fileHandleForReading];
-                    [output waitForDataInBackgroundAndNotify];
-                    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
-                    
-                    NSPipe *errorPipe = [[NSPipe alloc] init];
-                    NSFileHandle *error = [errorPipe fileHandleForReading];
-                    [error waitForDataInBackgroundAndNotify];
-                    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
-                    
-                    [task setStandardOutput:outputPipe];
-                    [task setStandardError:errorPipe];
-                    
-                    @try {
-                        [task launch];
-                        [task waitUntilExit];
-                        
-                        int terminationStatus = [task terminationStatus];
-                        switch (terminationStatus) {
-                            case EX_NOPERM:
-                                [self writeToConsole:NSLocalizedString(@"Zebra was unable to complete this command because it does not have the proper permissions. Please verify the permissions located at /usr/libexec/zebra/supersling and report this issue on GitHub.", @"") atLevel:ZBLogLevelError];
-                                break;
-                            case EDEADLK:
-                                [self writeToConsole:NSLocalizedString(@"ERROR: Unable to lock status file. Please try again.", @"") atLevel:ZBLogLevelError];
-                                break;
-                            case 85: //ERESTART apparently
-                                [self writeToConsole:NSLocalizedString(@"ERROR: Process must be restarted. Please try again.", @"") atLevel:ZBLogLevelError];
-                                    break;
-                            default:
-                                break;
-                        }
-                    } @catch (NSException *e) {
-                        NSString *message = [NSString stringWithFormat:@"Could not complete %@ process. Reason: %@.", [ZBDevice packageManagementBinary],  e.reason];
-                        
-                        CLS_LOG(@"%@", message);
-                        NSLog(@"[Zebra] %@", message);
-                        [self writeToConsole:message atLevel:ZBLogLevelError];
-                        [self writeToConsole:@"Please restart Zebra and see if the issue still persists. If so, please file an issue on GitHub." atLevel:ZBLogLevelInfo];
-                    }
+//                    NSTask *task = [[NSTask alloc] init];
+//                    [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
+//                    [task setArguments:baseCommand];
+//
+//                    NSPipe *outputPipe = [[NSPipe alloc] init];
+//                    NSFileHandle *output = [outputPipe fileHandleForReading];
+//                    [output waitForDataInBackgroundAndNotify];
+//                    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
+//
+//                    NSPipe *errorPipe = [[NSPipe alloc] init];
+//                    NSFileHandle *error = [errorPipe fileHandleForReading];
+//                    [error waitForDataInBackgroundAndNotify];
+//                    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
+//
+//                    [task setStandardOutput:outputPipe];
+//                    [task setStandardError:errorPipe];
+//
+//                    @try {
+//                        [task launch];
+//                        [task waitUntilExit];
+//
+//                        int terminationStatus = [task terminationStatus];
+//                        switch (terminationStatus) {
+//                            case EX_NOPERM:
+//                                [self writeToConsole:NSLocalizedString(@"Zebra was unable to complete this command because it does not have the proper permissions. Please verify the permissions located at /usr/libexec/zebra/supersling and report this issue on GitHub.", @"") atLevel:ZBLogLevelError];
+//                                break;
+//                            case EDEADLK:
+//                                [self writeToConsole:NSLocalizedString(@"ERROR: Unable to lock status file. Please try again.", @"") atLevel:ZBLogLevelError];
+//                                break;
+//                            case 85: //ERESTART apparently
+//                                [self writeToConsole:NSLocalizedString(@"ERROR: Process must be restarted. Please try again.", @"") atLevel:ZBLogLevelError];
+//                                    break;
+//                            default:
+//                                break;
+//                        }
+//                    } @catch (NSException *e) {
+//                        NSString *message = [NSString stringWithFormat:@"Could not complete %@ process. Reason: %@.", [ZBDevice packageManagementBinary],  e.reason];
+//
+//                        CLS_LOG(@"%@", message);
+//                        NSLog(@"[Zebra] %@", message);
+//                        [self writeToConsole:message atLevel:ZBLogLevelError];
+//                        [self writeToConsole:@"Please restart Zebra and see if the issue still persists. If so, please file an issue on GitHub." atLevel:ZBLogLevelInfo];
+//                    }
                 }
                 else {
                     [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
@@ -406,6 +411,18 @@
             [self finishTasks];
         }
     }
+}
+
+- (void)receivedMessage:(NSString *)notif {
+    [self writeToConsole:notif atLevel:ZBLogLevelDescript];
+}
+
+- (void)receivedWarning:(NSString *)notif {
+    [self writeToConsole:notif atLevel:ZBLogLevelWarning];
+}
+
+- (void)receivedError:(NSString *)notif {
+    [self writeToConsole:notif atLevel:ZBLogLevelError];
 }
 
 - (void)finishTasks {
