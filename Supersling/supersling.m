@@ -67,7 +67,12 @@
         [fh waitForDataInBackgroundAndNotify];
         NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 
-        [[self.xpcConnection remoteObjectProxy] receivedErrorData:str];
+        if ([str containsString:@"stable CLI interface"]) return;
+
+        NSArray *segments = [str componentsSeparatedByString:@"\n"];
+        for (NSString *segment in segments) {
+            [[self.xpcConnection remoteObjectProxy] receivedErrorData:segment];
+        }
     }
 }
 
