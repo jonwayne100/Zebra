@@ -33,11 +33,11 @@
     xpcConnection.exportedObject = self;
     
     xpcConnection.interruptionHandler = ^{
-        NSLog(@"[Zebra] Communication with Supersling terminated");
+        [ZBAppDelegate sendErrorToTabController:@"Communication with the su/sling daemon was interrupted."];
     };
 
     xpcConnection.invalidationHandler = ^{
-        NSLog(@"[Zebra] Communication with Supersling invalidated");
+        [ZBAppDelegate sendErrorToTabController:@"Communication with the su/sling daemon was invalidated."];
     };
     
     [xpcConnection resume];
