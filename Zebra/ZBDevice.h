@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <NSTask.h>
 #import <Commands/ZBCommandDelegate.h>
 
 @import SafariServices;
@@ -28,8 +27,6 @@
 
 + (void)hapticButton;
 
-+ (void)task:(NSTask *_Nullable)task withArguments:(NSArray *_Nullable)arguments;
-+ (void)asRoot:(NSTask *_Nullable)task arguments:(NSArray *_Nullable)arguments;
 + (void)restartSpringBoard;
 + (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBCommandDelegate> * _Nullable)observer;
 + (void)runCommandInPath:(NSString *_Nonnull)command asRoot:(BOOL)sling observer:(NSObject <ZBCommandDelegate> *_Nullable)observer;

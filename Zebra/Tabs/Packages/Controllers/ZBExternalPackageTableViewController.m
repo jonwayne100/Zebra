@@ -26,7 +26,7 @@
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:@"/usr/bin/dpkg"];
-    [ZBDevice asRoot:task arguments:@[@"-I", [_fileURL path], @"control"]];
+//    [ZBDevice asRoot:task arguments:@[@"-I", [_fileURL path], @"control"]];
     
     NSPipe *pipe = [NSPipe pipe];
     [task setStandardOutput:pipe];
