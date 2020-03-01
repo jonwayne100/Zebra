@@ -19,6 +19,7 @@
 
 - (void)receivedData:(NSString *_Nullable)notif;
 - (void)receivedErrorData:(NSString *_Nullable)notif;
+- (void)finished;
 
 @end
 

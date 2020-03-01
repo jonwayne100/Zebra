@@ -7,6 +7,7 @@
 //
 
 #import "ZBCommand.h"
+#import <ZBAppDelegate.h>
 
 @implementation ZBCommand
 
@@ -41,7 +42,11 @@
     
     [xpcConnection resume];
     
-    [xpcConnection.remoteObjectProxy runCommandAtPath:path arguments:arguments asRoot:root];
+    id<ZBSlingshotServer> slingshot = [xpcConnection remoteObjectProxyWithErrorHandler:^(NSError * _Nonnull error) {
+        [ZBAppDelegate sendErrorToTabController:error.localizedDescription];
+    }];
+    
+    [slingshot runCommandAtPath:path arguments:arguments asRoot:root];
 }
 
 - (void)receivedData:(NSString *)message {
@@ -50,21 +55,17 @@
 }
 
 - (void)receivedErrorData:(NSString *)message {
-    if ([[message lowercaseString] rangeOfString:@"warning"].location != NSNotFound) {
-        message = [message stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
-            
-        NSLog(@"[Zebra] Received Warning Data from su/sling: %@", message);
+    NSLog(@"[Zebra] Received Error Data from su/sling: %@", message);
+    if ([[message lowercaseString] rangeOfString:@"warning"].location != NSNotFound || [[message lowercaseString] rangeOfString:@"w: "].location != NSNotFound) {
         [delegate receivedWarning:message];
-    }
-    else if ([[message lowercaseString] rangeOfString:@"error"].location != NSNotFound) {
-        message = [message stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
-
-        NSLog(@"[Zebra] Received Error Data from su/sling: %@", message);
-        [delegate receivedError:message];
     }
     else { //We apparently never logged errors before this...
         [delegate receivedError:message];
     }
+}
+
+- (void)finished {
+    [delegate receivedMessage:@"Finished Command"];
 }
 
 @end

@@ -28,6 +28,8 @@
 
     [task launch];
     [task waitUntilExit];
+
+    [[self.xpcConnection remoteObjectProxy] finished];
 }
 
 -(BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
