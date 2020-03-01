@@ -33,17 +33,17 @@
     xpcConnection.exportedObject = self;
     
     xpcConnection.interruptionHandler = ^{
-        [ZBAppDelegate sendErrorToTabController:@"Communication with the su/sling daemon was interrupted."];
+        [self.delegate receivedError:@"Communication with the su/sling daemon was interrupted."];
     };
 
     xpcConnection.invalidationHandler = ^{
-        [ZBAppDelegate sendErrorToTabController:@"Communication with the su/sling daemon was invalidated."];
+        [self.delegate receivedError:@"Communication with the su/sling daemon was invalidated."];
     };
     
     [xpcConnection resume];
     
     id<ZBSlingshotServer> slingshot = [xpcConnection remoteObjectProxyWithErrorHandler:^(NSError * _Nonnull error) {
-        [ZBAppDelegate sendErrorToTabController:error.localizedDescription];
+        [self.delegate receivedError:error.localizedDescription];
     }];
     
     [slingshot runCommandAtPath:path arguments:arguments];
