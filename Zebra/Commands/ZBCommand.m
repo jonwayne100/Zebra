@@ -50,13 +50,13 @@
 }
 
 - (void)receivedErrorData:(NSString *)message {
-    if ([message rangeOfString:@"warning"].location != NSNotFound) {
+    if ([[message lowercaseString] rangeOfString:@"warning"].location != NSNotFound) {
         message = [message stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
             
         NSLog(@"[Zebra] Received Warning Data from su/sling: %@", message);
         [delegate receivedWarning:message];
     }
-    else if ([message rangeOfString:@"error"].location != NSNotFound) {
+    else if ([[message lowercaseString] rangeOfString:@"error"].location != NSNotFound) {
         message = [message stringByReplacingOccurrencesOfString:@"dpkg: " withString:@""];
 
         NSLog(@"[Zebra] Received Error Data from su/sling: %@", message);
