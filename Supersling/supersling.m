@@ -10,10 +10,12 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 
 @implementation ZBSlingshot
 
-@synthesize outputPipe;
-@synthesize errorPipe;
+@synthesize running;
 
 - (void)executeCommands:(NSArray <NSArray <NSString *> *> *)commands {
+    if (running) return;
+    else [self setRunning:YES];
+
     NSMutableArray *tasks = [NSMutableArray new];
     for (NSArray *command in commands) {
         NSLog(@"[Supersling] Command Received: %@", command);
@@ -21,13 +23,18 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
         NSTask *task = [[NSTask alloc] init];
         [task setLaunchPath:command[0]];
         [task setArguments:[command subarrayWithRange:NSMakeRange(1, command.count - 1)]];
-                            
-        if (!outputPipe) outputPipe = [[NSPipe alloc] init];
+
+        [tasks addObject:task];
+    }
+
+    for (NSTask *task in tasks) {
+        NSPipe *outputPipe = [NSPipe pipe];
+        NSPipe *errorPipe = [NSPipe pipe];
+
         NSFileHandle *output = [outputPipe fileHandleForReading];
         [output waitForDataInBackgroundAndNotify];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
-                                
-        if (!errorPipe) errorPipe = [[NSPipe alloc] init];
+
         NSFileHandle *error = [errorPipe fileHandleForReading];
         [error waitForDataInBackgroundAndNotify];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
@@ -35,10 +42,6 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
         [task setStandardOutput:outputPipe];
         [task setStandardError:errorPipe];
 
-        [tasks addObject:task];
-    }
-
-    for (NSTask *task in tasks) {
         @try {
             [task launch];
             [task waitUntilExit];
@@ -55,8 +58,15 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
         }
     }
 
-    outputPipe = NULL;
-    errorPipe = NULL;
+    [self finishUp];
+}
+
+- (void)finishUp {
+    if (!running) return;
+
+    [self setRunning:NO];
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[self.xpcConnection remoteObjectProxy] finishedAllTasks];
 }
 
@@ -90,36 +100,42 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 }
 
 -(BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
-    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
-    newConnection.exportedObject = self;
-    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
-    self.xpcConnection = newConnection;
-
-    struct stat template;
-    if (lstat("/Applications/Zebra.app/Zebra", &template) == -1) { //Make sure the Zebra binary actually exists, and get our template
-        NSLog(@"[Supersling] THE TRUE AND NEO CHAOS!");
-        [[self.xpcConnection remoteObjectProxy] receivedData:@"THE TRUE AND NEO CHAOS"];
-
+    if (running) {
         return NO;
     }
     else {
-        pid_t pid = newConnection.processIdentifier; //Get the process identifier
-
-        char buffer[PATH_MAX];
-        int ret = proc_pidpath(pid, buffer, sizeof(buffer)); //Get the executable path of the parent process
-
-        struct stat response;
-        lstat(buffer, &response); //Use the process path and get stat information from that
-
-        if (ret < 1 || (template.st_dev != response.st_dev || template.st_ino != response.st_ino)) { //If the files are identical, we can execute the command
-            NSLog(@"[Supersling] CHAOS, CHAOS!");
-            [[self.xpcConnection remoteObjectProxy] receivedData:@"CHAOS, CHAOS!"]  ;
+        struct stat template;
+        if (lstat("/Applications/Zebra.app/Zebra", &template) == -1) { //Make sure the Zebra binary actually exists, and get our template
+            NSLog(@"[Supersling] THE TRUE AND NEO CHAOS!");
+            [[self.xpcConnection remoteObjectProxy] receivedData:@"THE TRUE AND NEO CHAOS"];
 
             return NO;
         }
+        else {
+            pid_t pid = newConnection.processIdentifier; //Get the process identifier
 
-        [newConnection resume];
-        return YES;
+            char buffer[PATH_MAX];
+            int ret = proc_pidpath(pid, buffer, sizeof(buffer)); //Get the executable path of the parent process
+
+            struct stat response;
+            lstat(buffer, &response); //Use the process path and get stat information from that
+
+            if (ret < 1 || (template.st_dev != response.st_dev || template.st_ino != response.st_ino)) { //If the files are identical, we can execute the command
+                NSLog(@"[Supersling] CHAOS, CHAOS!");
+                [[self.xpcConnection remoteObjectProxy] receivedData:@"CHAOS, CHAOS!"]  ;
+
+                return NO;
+            }
+
+            newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
+            newConnection.exportedObject = self;
+            newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
+            self.xpcConnection = newConnection;
+
+
+            [newConnection resume];
+            return YES;
+        }
     }
 }
 

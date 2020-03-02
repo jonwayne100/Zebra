@@ -28,8 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZBSlingshot : NSObject <NSXPCListenerDelegate, ZBSlingshotServer>
 
 @property (strong) NSXPCConnection *xpcConnection;
-@property (strong) NSPipe *outputPipe;
-@property (strong) NSPipe *errorPipe;
+@property BOOL running;
 
 @end
 
