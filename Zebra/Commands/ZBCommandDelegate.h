@@ -6,6 +6,8 @@
 //  Copyright © 2019 Wilson Styres. All rights reserved.
 //
 
+@class NSTask;
+
 #ifndef ZBCommandDelegate_h
 #define ZBCommandDelegate_h
 
@@ -13,6 +15,8 @@
 - (void)receivedMessage:(NSString *_Nonnull)notif;
 - (void)receivedWarning:(NSString *_Nonnull)notif;
 - (void)receivedError:(NSString *_Nonnull)notif;
+
+- (void)task:(NSTask *_Nonnull)task failedWithReason:(NSString *_Nonnull)reason;
 - (void)finishedAllTasks;
 @end
 

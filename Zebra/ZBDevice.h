@@ -17,7 +17,6 @@
 
 @interface ZBDevice : NSObject
 + (BOOL)needsSimulation;
-+ (BOOL)isSlingshotBroken:(NSError *_Nullable*_Nullable)error;
 + (NSString *_Nullable)UDID;
 + (NSString *_Nullable)deviceModelID;
 + (NSString *_Nullable)machineID;
@@ -29,7 +28,6 @@
 
 + (void)restartSpringBoard;
 + (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBCommandDelegate> * _Nullable)observer;
-+ (void)runCommandInPath:(NSString *_Nonnull)command asRoot:(BOOL)sling observer:(NSObject <ZBCommandDelegate> *_Nullable)observer;
 
 + (void)openURL:(NSURL *_Nonnull)url delegate:(UIViewController <SFSafariViewControllerDelegate> *_Nonnull)delegate;
 

@@ -20,33 +20,33 @@
         if (delegate) self.delegate = delegate;
         self.finished = NO;
         
-        NSXPCConnection *xpcConnection = [[NSXPCConnection alloc] initWithMachServiceName:@"xyz.willy.supersling" options:NSXPCConnectionPrivileged];
+        NSXPCConnection *connection = [[NSXPCConnection alloc] initWithMachServiceName:@"xyz.willy.supersling" options:NSXPCConnectionPrivileged];
         
         NSXPCInterface *remoteInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotServer)];
-        xpcConnection.remoteObjectInterface = remoteInterface;
+        connection.remoteObjectInterface = remoteInterface;
         
-        xpcConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
-        xpcConnection.exportedObject = self;
+        connection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ZBSlingshotClient)];
+        connection.exportedObject = self;
         
-        xpcConnection.interruptionHandler = ^{
+        [connection setInterruptionHandler:^{
             if (!self.finished) {
                 [self.delegate receivedError:@"Communication with su/sling interrupted."];
                 
                 [self finishedAllTasks];
             }
-        };
+        }];
 
-        xpcConnection.invalidationHandler = ^{
+        [connection setInvalidationHandler:^{
             if (!self.finished) {
                 [self.delegate receivedError:@"Communication with su/sling invalidated."];
                 
                 [self finishedAllTasks];
             }
-        };
+        }];
         
-        [xpcConnection resume];
+        [connection resume];
         
-        id<ZBSlingshotServer> slingshot = [xpcConnection remoteObjectProxyWithErrorHandler:^(NSError * _Nonnull error) {
+        id<ZBSlingshotServer> slingshot = [connection remoteObjectProxyWithErrorHandler:^(NSError * _Nonnull error) {
             [self.delegate receivedError:error.localizedDescription];
         }];
         
@@ -73,6 +73,11 @@
     else { //We apparently never logged errors before this...
         [delegate receivedError:message];
     }
+}
+
+- (void)task:(NSTask *)task failedWithReason:(NSString *)reason {
+    [delegate task:task failedWithReason:reason];
+    [delegate finishedAllTasks];
 }
 
 - (void)finishedAllTasks {

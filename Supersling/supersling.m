@@ -18,8 +18,6 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 
     NSMutableArray *tasks = [NSMutableArray new];
     for (NSArray *command in commands) {
-        NSLog(@"[Supersling] Command Received: %@", command);
-
         NSTask *task = [[NSTask alloc] init];
         [task setLaunchPath:command[0]];
         [task setArguments:[command subarrayWithRange:NSMakeRange(1, command.count - 1)]];
@@ -48,17 +46,33 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 
             int terminationStatus = [task terminationStatus];
             if (terminationStatus != 0) {
-                NSString *message = [NSString stringWithFormat:@"ERROR: Task failed with error code %d", terminationStatus];
-                [[self.xpcConnection remoteObjectProxy] receivedErrorData:message];
+                [self task:task failedWithReason:[NSNumber numberWithInt:terminationStatus]];
+                break;
             }
         }
         @catch (NSException *e) {
-            NSString *message = [NSString stringWithFormat:@"ERROR: Task failed with reason: %@", e.reason];
-            [[self.xpcConnection remoteObjectProxy] receivedErrorData:message];
+            [self task:task failedWithReason:e];
+            break;
         }
     }
 
     [self finishUp];
+}
+
+- (void)task:(NSTask *)task failedWithReason:(id)reason {
+    if (!running) return;
+
+    [self setRunning:NO];
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    if ([reason isKindOfClass:[NSNumber class]]) {
+        [[self.xpcConnection remoteObjectProxy] task:task failedWithReason:[NSString stringWithFormat:@"%d", [reason intValue]]];
+    }
+    else if ([reason isKindOfClass:[NSException class]]) {
+        NSException *exception = (NSException *)reason;
+        [[self.xpcConnection remoteObjectProxy] task:task failedWithReason:exception.reason];
+    }
 }
 
 - (void)finishUp {
