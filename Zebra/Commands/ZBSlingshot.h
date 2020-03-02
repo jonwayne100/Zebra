@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)receivedData:(NSString *_Nullable)notif;
 - (void)receivedErrorData:(NSString *_Nullable)notif;
-- (void)finished;
+- (void)finishedAllTasks;
 
 @end
 

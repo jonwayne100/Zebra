@@ -315,19 +315,6 @@
 //                }
 //            }
             
-            for (int i = 0; i < [installedPackageIdentifiers count]; i++) {
-                NSString *packageIdentifier = installedPackageIdentifiers[i];
-                NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageIdentifier];
-                if (bundlePath && ![applicationBundlePaths containsObject:bundlePath]) {
-                    updateIconCache = YES;
-                    [applicationBundlePaths addObject:bundlePath];
-                }
-                
-                if (!respringRequired) {
-                    respringRequired  = [ZBPackage respringRequiredFor:packageIdentifier];
-                }
-            }
-            
             if (zebraModification) { //Zebra should be the last thing installed so here is our chance to install it.
                 if (queue.removingZebra) {
                     [self postStatusUpdate:NSLocalizedString(@"Removing Zebra...", @"") atLevel:ZBLogLevelInfo];
@@ -397,16 +384,31 @@
                     queue.removingZebra ? [self writeToConsole:@"xyz.willy.zebra" atLevel:ZBLogLevelDescript] : [self writeToConsole:[path lastPathComponent] atLevel:ZBLogLevelDescript];
                 }
             }
-            
-            if (!zebraRestartRequired && updateIconCache) {
-                [self updateIconCaches];
-            }
-            
-            [self refreshLocalPackages];
-            [self removeAllDebs];
-            [self finishTasks];
         }
     }
+}
+
+- (void)finishedAllTasks {
+    for (int i = 0; i < [installedPackageIdentifiers count]; i++) {
+        NSString *packageIdentifier = installedPackageIdentifiers[i];
+        NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageIdentifier];
+        if (bundlePath && ![applicationBundlePaths containsObject:bundlePath]) {
+            updateIconCache = YES;
+            [applicationBundlePaths addObject:bundlePath];
+        }
+        
+        if (!respringRequired) {
+            respringRequired  = [ZBPackage respringRequiredFor:packageIdentifier];
+        }
+    }
+    
+    if (!zebraRestartRequired && updateIconCache) {
+        [self updateIconCaches];
+    }
+    
+    [self refreshLocalPackages];
+    [self removeAllDebs];
+    [self finishTasks];
 }
 
 - (void)receivedMessage:(NSString *)notif {

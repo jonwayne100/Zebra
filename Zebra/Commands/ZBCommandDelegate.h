@@ -13,6 +13,7 @@
 - (void)receivedMessage:(NSString *_Nonnull)notif;
 - (void)receivedWarning:(NSString *_Nonnull)notif;
 - (void)receivedError:(NSString *_Nonnull)notif;
+- (void)finishedAllTasks;
 @end
 
 

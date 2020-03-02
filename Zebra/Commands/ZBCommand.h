@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZBCommand : NSObject <ZBSlingshotClient>
 @property id <ZBCommandDelegate> delegate;
 @property id <ZBSlingshotServer> slingshot;
+@property BOOL finished;
 - (id)initWithDelegate:(id <ZBCommandDelegate> _Nullable)delegate;
 - (void)executeCommands:(NSArray <NSArray <NSString *> *> *)commands asRoot:(BOOL)root;
 @end

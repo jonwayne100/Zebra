@@ -55,7 +55,9 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
         }
     }
 
-    [[self.xpcConnection remoteObjectProxy] finished];
+    outputPipe = NULL;
+    errorPipe = NULL;
+    [[self.xpcConnection remoteObjectProxy] finishedAllTasks];
 }
 
 - (void)receivedData:(NSNotification *)notif {

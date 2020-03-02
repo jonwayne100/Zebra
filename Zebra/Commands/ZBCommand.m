@@ -18,6 +18,7 @@
     
     if (self) {
         if (delegate) self.delegate = delegate;
+        self.finished = NO;
         
         NSXPCConnection *xpcConnection = [[NSXPCConnection alloc] initWithMachServiceName:@"xyz.willy.supersling" options:NSXPCConnectionPrivileged];
         
@@ -28,15 +29,19 @@
         xpcConnection.exportedObject = self;
         
         xpcConnection.interruptionHandler = ^{
-            [self.delegate receivedError:@"Communication with su/sling interrupted."];
-            
-            [self finished];
+            if (!self.finished) {
+                [self.delegate receivedError:@"Communication with su/sling interrupted."];
+                
+                [self finishedAllTasks];
+            }
         };
 
         xpcConnection.invalidationHandler = ^{
-            [self.delegate receivedError:@"Communication with su/sling invalidated."];
-            
-            [self finished];
+            if (!self.finished) {
+                [self.delegate receivedError:@"Communication with su/sling invalidated."];
+                
+                [self finishedAllTasks];
+            }
         };
         
         [xpcConnection resume];
@@ -70,8 +75,10 @@
     }
 }
 
-- (void)finished {
-    [delegate receivedMessage:@"Finished All Tasks"];
+- (void)finishedAllTasks {
+    self.finished = YES;
+    
+    [delegate finishedAllTasks];
 }
 
 @end
