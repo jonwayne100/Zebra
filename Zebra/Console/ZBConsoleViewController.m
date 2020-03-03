@@ -237,8 +237,9 @@
 - (void)executeNextStage {
     if ([stages count]) {
         ZBStage *nextStage = stages[0];
+        [self updateStage:nextStage.type];
+        
         if (![ZBDevice needsSimulation]) {
-            [self updateStage:nextStage.type];
             if (nextStage.type == ZBStageRemove) {
                 for (int i = COMMAND_START; i < [nextStage.command count]; ++i) {
                     NSString *packageID = nextStage.command[i];
@@ -267,9 +268,13 @@
                 if (![self isValidPackageID:packageID]) continue;
                 [self writeToConsole:[packageID lastPathComponent] atLevel:ZBLogLevelDescript];
             }
+            [stages removeObjectAtIndex:0];
+            [self executeNextStage];
         }
     }
     else if (needsZebraStage) {
+        needsZebraStage = NO;
+        
         NSString *path = queue.zebraPath;
         if (![ZBDevice needsSimulation]) {
             if (queue.removingZebra) {
@@ -293,9 +298,9 @@
         else {
             [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
             queue.removingZebra ? [self writeToConsole:@"xyz.willy.zebra" atLevel:ZBLogLevelDescript] : [self writeToConsole:[path lastPathComponent] atLevel:ZBLogLevelDescript];
+            
+            [self executeNextStage];
         }
-        
-        needsZebraStage = NO;
     }
     else {
         for (int i = 0; i < [installedPackageIdentifiers count]; i++) {
