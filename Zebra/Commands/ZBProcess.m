@@ -40,14 +40,6 @@
                 [self finishedAllTasks];
             }
         }];
-
-        [connection setInvalidationHandler:^{
-            if (!self.finished) {
-                [self.delegate receivedError:@"Communication with su/sling invalidated."];
-                
-                [self finishedAllTasks];
-            }
-        }];
         
         [connection resume];
         
@@ -155,8 +147,9 @@
 }
 
 - (void)task:(NSTask *)task failedWithReason:(NSString *)reason {
+    self.finished = YES;
+    
     [delegate task:task failedWithReason:reason];
-    [delegate finishedAllTasks];
 }
 
 - (void)finishedAllTasks {

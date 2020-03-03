@@ -105,19 +105,18 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = NSLocalizedString(@"Console", @"");
+    
+    [self setupView];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [self setupView];
     
     if (@available(iOS 11.0, *)) {
         self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
     }
     
     if (currentStage == -1) { //Only run the process once per console cycle
-        if (!process) process = [[ZBProcess alloc] initWithDelegate:self];
-        
         dispatch_async(dispatch_get_main_queue(), ^{
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         });
@@ -212,6 +211,8 @@
 }
 
 - (void)performTasksForDownloadedFiles {
+    if (!process) process = [[ZBProcess alloc] initWithDelegate:self];
+    
     if (downloadFailed) {
         [self writeToConsole:[NSString stringWithFormat:@"\n%@\n\n%@", NSLocalizedString(@"One or more packages failed to download.", @""), NSLocalizedString(@"Click \"Return to Queue\" to return to the Queue and retry the download.", @"")] atLevel:ZBLogLevelDescript];
         [self finishTasks];
@@ -304,7 +305,11 @@
             [self executeNextStage];
         }
     }
-    else {
+    else if (currentStage != ZBStageFinished) {
+        [self updateStage:ZBStageFinished];
+        
+        process = NULL;
+        
         for (int i = 0; i < [installedPackageIdentifiers count]; i++) {
             NSString *packageIdentifier = installedPackageIdentifiers[i];
             NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageIdentifier];
@@ -326,6 +331,10 @@
         [self removeAllDebs];
         [self finishTasks];
     }
+}
+
+- (void)task:(NSTask *)task failedWithReason:(NSString *)reason {
+    [self receivedWarning:reason];
 }
 
 - (void)finishedAllTasks {
@@ -350,7 +359,6 @@
     [applicationBundlePaths removeAllObjects];
     [installedPackageIdentifiers removeAllObjects];
     
-    [self updateStage:ZBStageFinished];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     });
