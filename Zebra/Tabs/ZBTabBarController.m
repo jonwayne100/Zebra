@@ -68,8 +68,6 @@
         [databaseManager updateDatabaseUsingCaching:YES userRequested:NO];
     }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateQueueBar) name:@"ZBUpdateQueueBar" object:nil];
-    
-    NSError *error;
 }
 
 - (void)applyLocalization {

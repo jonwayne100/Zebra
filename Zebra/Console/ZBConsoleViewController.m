@@ -19,7 +19,7 @@
 #import <ZBLog.h>
 #import <ZBSettings.h>
 #import <UIColor+GlobalColors.h>
-#import <Commands/ZBCommand.h>
+#import <Commands/ZBProcess.h>
 
 #include <sysexits.h>
 
@@ -30,12 +30,15 @@
     NSMutableArray *applicationBundlePaths;
     NSMutableArray *completedDownloads;
     NSMutableArray *installedPackageIdentifiers;
+    NSMutableArray <ZBStage *> *stages;
     NSMutableDictionary <NSString *, NSNumber *> *downloadMap;
     NSString *localInstallPath;
     ZBDownloadManager *downloadManager;
     ZBQueue *queue;
-    ZBStage currentStage;
+    ZBStageType currentStage;
+    ZBProcess *process;
     BOOL downloadFailed;
+    BOOL needsZebraStage;
     BOOL respringRequired;
     BOOL suppressCancel;
     BOOL updateIconCache;
@@ -102,17 +105,11 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = NSLocalizedString(@"Console", @"");
-    
-//    NSError *error;
-//    if ([ZBDevice isSlingshotBroken:&error]) {
-//        [ZBAppDelegate sendAlertFrom:self message:error.localizedDescription];
-//    }
-    
-    [self setupView];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+    [self setupView];
     
     if (@available(iOS 11.0, *)) {
         self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
@@ -218,10 +215,10 @@
         [self finishTasks];
     }
     else {
-        NSArray *actions = [queue tasksToPerform];
-        NSLog(@"[Zebra] Completed Downloads %@", completedDownloads);
+        self->stages = [[queue tasksToPerform] mutableCopy];
+        
         BOOL zebraModification = queue.zebraPath || queue.removingZebra;
-        if ([actions count] == 0 && !zebraModification) {
+        if ([stages count] == 0 && !zebraModification) {
             [self writeToConsole:NSLocalizedString(@"There are no actions to perform", @"") atLevel:ZBLogLevelDescript];
         }
         else {
@@ -231,108 +228,12 @@
             for (ZBPackage *package in completedDownloads) {
                 [installedPackageIdentifiers addObject:[package identifier]];
             }
-            
-            ZBCommand *command = [[ZBCommand alloc] initWithDelegate:self];
-            [command executeCommands:actions asRoot:true];
-            
-//            for (NSArray *command in actions) {
-//                if ([command count] == 1) {
-//                    [self updateStage:(ZBStage)[command[0] intValue]];
-//                }
-//                else {
-//                    if (currentStage == ZBStageRemove) {
-//                        for (int i = COMMAND_START; i < [command count]; ++i) {
-//                            NSString *packageID = command[i];
-//                            if (![self isValidPackageID:packageID]) continue;
-//
-//                            NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageID];
-//                            if (bundlePath) {
-//                                updateIconCache = YES;
-//                                [applicationBundlePaths addObject:bundlePath];
-//                            }
-//
-//                            if (!respringRequired) {
-//                                respringRequired = [ZBPackage respringRequiredFor:packageID];
-//                            }
-//                        }
-//                    }
-//
-//                    zebraRestartRequired = queue.zebraPath || queue.removingZebra;
-//
-//                    if (![ZBDevice needsSimulation]) {
-//                        ZBLog(@"[Zebra] Executing commands...");
-//                        NSTask *task = [[NSTask alloc] init];
-//                        [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
-//                        [task setArguments:command];
-//
-//                        NSPipe *outputPipe = [[NSPipe alloc] init];
-//                        NSFileHandle *output = [outputPipe fileHandleForReading];
-//                        [output waitForDataInBackgroundAndNotify];
-//                        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
-//
-//                        NSPipe *errorPipe = [[NSPipe alloc] init];
-//                        NSFileHandle *error = [errorPipe fileHandleForReading];
-//                        [error waitForDataInBackgroundAndNotify];
-//                        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
-//
-//                        [task setStandardOutput:outputPipe];
-//                        [task setStandardError:errorPipe];
-//
-//                        @try {
-//                            [task launch];
-//                            [task waitUntilExit];
-//
-//                            int terminationStatus = [task terminationStatus];
-//                            switch (terminationStatus) {
-//                                case EX_NOPERM:
-//                                    [self writeToConsole:NSLocalizedString(@"Zebra was unable to complete this command because it does not have the proper permissions. Please verify the permissions located at /usr/libexec/zebra/supersling and report this issue on GitHub.", @"") atLevel:ZBLogLevelError];
-//                                    break;
-//                                case EDEADLK:
-//                                    [self writeToConsole:NSLocalizedString(@"ERROR: Unable to lock status file. Please try again.", @"") atLevel:ZBLogLevelError];
-//                                    break;
-//                                case 85: //ERESTART apparently
-//                                    [self writeToConsole:NSLocalizedString(@"ERROR: Process must be restarted. Please try again.", @"") atLevel:ZBLogLevelError];
-//                                    break;
-//                                default:
-//                                    break;
-//                            }
-//                        } @catch (NSException *e) {
-//                            NSString *message = [NSString stringWithFormat:@"Could not complete %@ process. Reason: %@.", [ZBDevice packageManagementBinary],  e.reason];
-//
-//                            CLS_LOG(@"%@", message);
-//                            NSLog(@"[Zebra] %@", message);
-//                            [self writeToConsole:message atLevel:ZBLogLevelError];
-//                        }
-//                    }
-//                    else {
-//                        [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
-//                        for (int i = COMMAND_START; i < [command count]; ++i) {
-//                            NSString *packageID = command[i];
-//                            if (![self isValidPackageID:packageID]) continue;
-//                            [self writeToConsole:[packageID lastPathComponent] atLevel:ZBLogLevelDescript];
-//                        }
-//                    }
-//                }
-//            }
+        
+            [self executeNextStage];
             
             if (zebraModification) { //Zebra should be the last thing installed so here is our chance to install it.
-                if (queue.removingZebra) {
-                    [self postStatusUpdate:NSLocalizedString(@"Removing Zebra...", @"") atLevel:ZBLogLevelInfo];
-                    [self postStatusUpdate:@"Goodbye forever :(" atLevel:ZBLogLevelDescript];
-                }
-                else {
-                    [self postStatusUpdate:NSLocalizedString(@"Installing Zebra...", @"") atLevel:ZBLogLevelInfo];
-                }
                 
-                NSString *path = queue.zebraPath;
                 
-                NSArray *baseCommand;
-                if ([[ZBDevice packageManagementBinary] isEqualToString:@"/usr/bin/dpkg"]) {
-                    baseCommand = @[@"dpkg", queue.removingZebra ? @"-r" : @"-i", queue.zebraPath ? path : @"xyz.willy.zebra"];
-                }
-                else {
-                    baseCommand = @[@"apt", @"-yqf", @"--allow-downgrades", @"-oApt::Get::HideAutoRemove=true", @"-oquiet::NoProgress=true", @"-oquiet::NoStatistic=true", queue.removingZebra ? @"remove" : @"install", queue.zebraPath ? path : @"xyz.willy.zebra"];
-                }
                 
                 if (![ZBDevice needsSimulation]) {
 //                    NSTask *task = [[NSTask alloc] init];
@@ -380,35 +281,102 @@
 //                    }
                 }
                 else {
-                    [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
-                    queue.removingZebra ? [self writeToConsole:@"xyz.willy.zebra" atLevel:ZBLogLevelDescript] : [self writeToConsole:[path lastPathComponent] atLevel:ZBLogLevelDescript];
+                    
                 }
             }
         }
     }
 }
 
-- (void)finishedAllTasks {
-    for (int i = 0; i < [installedPackageIdentifiers count]; i++) {
-        NSString *packageIdentifier = installedPackageIdentifiers[i];
-        NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageIdentifier];
-        if (bundlePath && ![applicationBundlePaths containsObject:bundlePath]) {
-            updateIconCache = YES;
-            [applicationBundlePaths addObject:bundlePath];
+- (void)executeNextStage {
+    if ([stages count]) {
+        ZBStage *nextStage = stages[0];
+        if (![ZBDevice needsSimulation]) {
+            [self updateStage:nextStage.type];
+            if (nextStage.type == ZBStageRemove) {
+                for (int i = COMMAND_START; i < [nextStage.command count]; ++i) {
+                    NSString *packageID = nextStage.command[i];
+                    if (![self isValidPackageID:packageID]) continue;
+
+                    NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageID];
+                    if (bundlePath) {
+                        updateIconCache = YES;
+                        [applicationBundlePaths addObject:bundlePath];
+                    }
+
+                    if (!respringRequired) {
+                        respringRequired = [ZBPackage respringRequiredFor:packageID];
+                    }
+                }
+            }
+            
+            [process executeCommands:@[nextStage.command] asRoot:true];
+            
+            [stages removeObjectAtIndex:0];
+        }
+        else {
+            [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
+            for (int i = COMMAND_START; i < [nextStage.command count]; ++i) {
+                NSString *packageID = nextStage.command[i];
+                if (![self isValidPackageID:packageID]) continue;
+                [self writeToConsole:[packageID lastPathComponent] atLevel:ZBLogLevelDescript];
+            }
+        }
+    }
+    else if (needsZebraStage) {
+        NSString *path = queue.zebraPath;
+        if (![ZBDevice needsSimulation]) {
+            if (queue.removingZebra) {
+                [self postStatusUpdate:NSLocalizedString(@"Removing Zebra...", @"") atLevel:ZBLogLevelInfo];
+                [self postStatusUpdate:@"Goodbye forever :(" atLevel:ZBLogLevelDescript];
+            }
+            else {
+                [self postStatusUpdate:NSLocalizedString(@"Installing Zebra...", @"") atLevel:ZBLogLevelInfo];
+            }
+            
+            NSArray *command;
+            if ([[ZBDevice packageManagementBinary] isEqualToString:@"/usr/bin/dpkg"]) {
+                command = @[@"/usr/bin/dpkg", queue.removingZebra ? @"-r" : @"-i", queue.zebraPath ? path : @"xyz.willy.zebra"];
+            }
+            else {
+                command = @[@"/usr/bin/apt", @"-yqf", @"--allow-downgrades", @"-oApt::Get::HideAutoRemove=true", @"-oquiet::NoProgress=true", @"-oquiet::NoStatistic=true", queue.removingZebra ? @"remove" : @"install", path ? path : @"xyz.willy.zebra"];
+            }
+            
+            [process executeCommands:@[command] asRoot:true];
+        }
+        else {
+            [self writeToConsole:@"This device is simulated, here are the packages that would be modified in this stage:" atLevel:ZBLogLevelWarning];
+            queue.removingZebra ? [self writeToConsole:@"xyz.willy.zebra" atLevel:ZBLogLevelDescript] : [self writeToConsole:[path lastPathComponent] atLevel:ZBLogLevelDescript];
         }
         
-        if (!respringRequired) {
-            respringRequired  = [ZBPackage respringRequiredFor:packageIdentifier];
+        needsZebraStage = NO;
+    }
+    else {
+        for (int i = 0; i < [installedPackageIdentifiers count]; i++) {
+            NSString *packageIdentifier = installedPackageIdentifiers[i];
+            NSString *bundlePath = [ZBPackage applicationBundlePathForIdentifier:packageIdentifier];
+            if (bundlePath && ![applicationBundlePaths containsObject:bundlePath]) {
+                updateIconCache = YES;
+                [applicationBundlePaths addObject:bundlePath];
+            }
+            
+            if (!respringRequired) {
+                respringRequired  = [ZBPackage respringRequiredFor:packageIdentifier];
+            }
         }
+        
+        if (!zebraRestartRequired && updateIconCache) {
+            [self updateIconCaches];
+        }
+        
+        [self refreshLocalPackages];
+        [self removeAllDebs];
+        [self finishTasks];
     }
-    
-    if (!zebraRestartRequired && updateIconCache) {
-        [self updateIconCaches];
-    }
-    
-    [self refreshLocalPackages];
-    [self removeAllDebs];
-    [self finishTasks];
+}
+
+- (void)finishedAllTasks {
+    [self executeNextStage];
 }
 
 - (void)receivedMessage:(NSString *)notif {
@@ -502,7 +470,7 @@
     }
 }
 
-- (void)updateStage:(ZBStage)stage {
+- (void)updateStage:(ZBStageType)stage {
     currentStage = stage;
     suppressCancel = stage != ZBStageDownload && stage != ZBStageFinished;
     

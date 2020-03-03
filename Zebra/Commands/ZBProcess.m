@@ -8,11 +8,11 @@
 
 @import Crashlytics;
 
-#import "ZBCommand.h"
+#import "ZBProcess.h"
 #import <ZBAppDelegate.h>
 #import <NSTask.h>
 
-@implementation ZBCommand
+@implementation ZBProcess
 
 @synthesize delegate;
 

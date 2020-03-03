@@ -12,7 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ZBCommand : NSObject <ZBSlingshotClient>
+@interface ZBProcess : NSObject <ZBSlingshotClient>
 @property id <ZBCommandDelegate> delegate;
 @property id <ZBSlingshotServer> slingshot;
 @property BOOL finished;

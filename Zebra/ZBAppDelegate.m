@@ -22,7 +22,7 @@
 #import <Tabs/Sources/Helpers/ZBSource.h>
 #import <Theme/ZBThemeManager.h>
 #import <Database/ZBRefreshViewController.h>
-#import <Commands/ZBCommand.h>
+#import <Commands/ZBProcess.h>
 
 @import FirebaseCore;
 @import FirebaseAnalytics;

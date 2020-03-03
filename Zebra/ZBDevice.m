@@ -20,7 +20,7 @@
 #import <sys/types.h>
 #import <sys/stat.h>
 #import <unistd.h>
-#import <ZBCommand.h>
+#import <ZBProcess.h>
 
 @import SafariServices;
 @import LNPopupController;
@@ -99,7 +99,7 @@
 
 + (void)restartSpringBoard {
     if (![self needsSimulation]) {
-        ZBCommand *command = [[ZBCommand alloc] initWithDelegate:nil];
+        ZBProcess *command = [[ZBProcess alloc] initWithDelegate:nil];
         if ([command executeCommand:@[@"sbreload"]]) {
             //If we get here that means sbreload failed...
             if ([command executeCommand:@[@"launchctl stop com.apple.backboardd"]]) {
@@ -115,7 +115,7 @@
 
 + (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBCommandDelegate> * _Nullable)observer {
     if (![ZBDevice needsSimulation]) {
-        ZBCommand *command = [[ZBCommand alloc] initWithDelegate:observer];
+        ZBProcess *command = [[ZBProcess alloc] initWithDelegate:observer];
         if (!arguments || [arguments count] == 0) {
             [command executeCommand:@[@"uicache", @"-a"]];
         }
