@@ -267,8 +267,9 @@
             }
             
             if ([removeCommand count] != commandCount) {
-//                [commands addObject:@[@(ZBStageRemove)]];
-                [commands addObject:removeCommand];
+                ZBStage *stage = [[ZBStage alloc] init];
+                stage.type = ZBStageRemove;
+                stage.command = removeCommand;
             }
         }
         else {
@@ -302,8 +303,9 @@
             }
             
             if ([removeCommand count] != commandCount) {
-//                [commands addObject:@[@(ZBStageRemove)]];
-                [commands addObject:removeCommand];
+                ZBStage *stage = [[ZBStage alloc] init];
+                stage.type = ZBStageRemove;
+                stage.command = removeCommand;
             }
         }
     }
@@ -344,13 +346,13 @@
         }
         
         if ([installCommand count] != commandCount) {
-//            [commands addObject:@[@(ZBStageInstall)]];
-            [commands addObject:installCommand];
+            ZBStage *stage = [[ZBStage alloc] init];
+            stage.type = ZBStageInstall;
+            stage.command = installCommand;
         }
     }
     
     if ([self queueHasPackages:ZBQueueTypeReinstall]) {
-//        [commands addObject:@[@(ZBStageReinstall)]];
         if ([binary isEqualToString:@"/usr/bin/apt"]) {
             NSMutableArray *reinstallCommand = [baseCommand mutableCopy];
             [reinstallCommand addObject:@"install"];
@@ -376,7 +378,10 @@
             [installCommand insertObject:@"-i" atIndex:1];
             NSArray *paths = [self pathsForPackagesInQueue:ZBQueueTypeReinstall];
             [installCommand addObjectsFromArray:paths];
-            [commands addObject:installCommand];
+            
+            ZBStage *stage = [[ZBStage alloc] init];
+            stage.type = ZBStageReinstall;
+            stage.command = installCommand;
         }
     }
     

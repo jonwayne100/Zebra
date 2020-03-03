@@ -2,12 +2,11 @@
 //  ZBStage.h
 //  Zebra
 //
-//  Created by Wilson Styres on 10/22/19.
-//  Copyright © 2019 Wilson Styres. All rights reserved.
+//  Created by Wilson Styres on 3/2/20.
+//  Copyright © 2020 Wilson Styres. All rights reserved.
 //
 
-#ifndef ZBStage_h
-#define ZBStage_h
+#import <Foundation/Foundation.h>
 
 typedef enum {
     ZBStageDownload = 0,
@@ -17,6 +16,13 @@ typedef enum {
     ZBStageUpgrade,
     ZBStageDowngrade,
     ZBStageFinished
-} ZBStage;
+} ZBStageType;
 
-#endif /* ZBStage_h */
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ZBStage : NSObject
+@property ZBStageType type;
+@property (strong) NSArray *command;
+@end
+
+NS_ASSUME_NONNULL_END
