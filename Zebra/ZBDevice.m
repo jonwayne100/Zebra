@@ -97,92 +97,33 @@
     }
 }
 
-//+ (void)restartSpringBoard {
-//    if (![self needsSimulation]) {
-//        BOOL failed = NO;
-//        
-//        ZBCommand *command = [[ZBCommand alloc] initWithDelegate:nil];
-//        if (@available(iOS 11.0, *)) {
-//            //Try sbreload
-//            
-//            NSLog(@"[Zebra] Trying sbreload");
-//            @try {
-//                [self runCommandInPath:@"sbreload" asRoot:NO observer:nil];
-//            }
-//            @catch (NSException *e) {
-//                CLS_LOG(@"Could not spawn sbreload. %@: %@", e.name, e.reason);
-//                NSLog(@"[Zebra] Could not spawn sbreload. %@: %@", e.name, e.reason);
-//                failed = YES;
-//            }
-//        }
-//        else {
-//            failed = YES; //sbreload hangs on < 10 apparently so we have to mark it as failed in order to continue
-//        }
-//        
-//        //Try launchctl
-//        if (failed) {
-//            NSLog(@"[Zebra] Trying launchctl");
-//            failed = NO;
-//            
-//            @try {
-//                [self runCommandInPath:@"launchctl stop com.apple.backboardd" asRoot:YES observer:nil];
-//            }
-//            @catch (NSException *e) {
-//                CLS_LOG(@"Could not spawn launchctl. %@: %@", e.name, e.reason);
-//                NSLog(@"[Zebra] Could not spawn launchctl. %@: %@", e.name, e.reason);
-//                failed = YES;
-//            }
-//        }
-//        
-//        //Try killall
-//        if (failed) {
-//            NSLog(@"[Zebra] Trying killall");
-//            failed = NO;
-//            
-//            @try {
-//                [self runCommandInPath:@"killall -9 backboardd" asRoot:YES observer:nil];
-//            }
-//            @catch (NSException *e) {
-//                CLS_LOG(@"Could not spawn killall. %@: %@", e.name, e.reason);
-//                NSLog(@"[Zebra] Could not spawn killall. %@: %@", e.name, e.reason);
-//                failed = YES;
-//            }
-//        }
-//        
-//        if (failed) {
-//            [ZBAppDelegate sendErrorToTabController:NSLocalizedString(@"Could not respring. Please respring manually.", @"")];
-//        }
-//    }
-//}
-//
-//+ (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBCommandDelegate> * _Nullable)observer {
-//    if (!arguments || [arguments count] == 0) {
-//        NSString *command = @"uicache -a";
-//        
-//        @try {
-//            [self runCommandInPath:command asRoot:NO observer:observer];
-//        }
-//        @catch (NSException *e) {
-//            CLS_LOG(@"%@ Could not spawn uicache. Reason: %@", e.name, e.reason);
-//            NSLog(@"[Zebra] %@ Could not spawn uicache. Reason: %@", e.name, e.reason);
-//        }
-//    }
-//    else {
-//        NSMutableString *command = [@"uicache" mutableCopy];
-//        for (NSString *argument in arguments) {
-//            [command appendString:@" "];
-//            [command appendString:argument];
-//        }
-//        
-//        @try {
-//            [self runCommandInPath:command asRoot:NO observer:observer];
-//        }
-//        @catch (NSException *e) {
-//            CLS_LOG(@"%@ Could not spawn uicache. Reason: %@", e.name, e.reason);
-//            NSLog(@"[Zebra] %@ Could not spawn uicache. Reason: %@", e.name, e.reason);
-//        }
-//    }
-//}
++ (void)restartSpringBoard {
+    if (![self needsSimulation]) {
+        ZBCommand *command = [[ZBCommand alloc] initWithDelegate:nil];
+        if ([command executeCommand:@[@"sbreload"]]) {
+            //If we get here that means sbreload failed...
+            if ([command executeCommand:@[@"launchctl stop com.apple.backboardd"]]) {
+                //If we get here that means launchctl failed...
+                if ([command executeCommand:@[@"killall", @"-9", @"backboardd"]]) {
+                    //If we get here that means killall failed...
+                    [ZBAppDelegate sendErrorToTabController:NSLocalizedString(@"Could not respring. Please respring manually.", @"")];
+                }
+            }
+        }
+    }
+}
+
++ (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBCommandDelegate> * _Nullable)observer {
+    if (![ZBDevice needsSimulation]) {
+        ZBCommand *command = [[ZBCommand alloc] initWithDelegate:observer];
+        if (!arguments || [arguments count] == 0) {
+            [command executeCommand:@[@"uicache", @"-a"]];
+        }
+        else {
+            [command executeCommand:[@[@"uicache", @"-p"] arrayByAddingObjectsFromArray:arguments]];
+        }
+    }
+}
 
 + (BOOL)_isRegularFile:(NSString *)path {
     BOOL isDir = NO;

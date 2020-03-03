@@ -129,15 +129,11 @@
     NSDictionary *environmentDict = [[NSProcessInfo processInfo] environment];
     NSArray *PATH = [[environmentDict objectForKey:@"PATH"] componentsSeparatedByString:@":"];
     
-    NSLog(@"[Zebra] Searching PATH for %@", command);
     for (NSString *path in PATH) {
         NSString *commandPath = [path stringByAppendingPathComponent:command];
-        NSLog(@"[Zebra] Does %@ exist in %@? (%@)", command, path, commandPath);
         if ([[NSFileManager defaultManager] fileExistsAtPath:commandPath]) {
-            NSLog(@"[Zebra] YES!");
             return commandPath;
         }
-        NSLog(@"[Zebra] No :(");
     }
     
     return NULL;
