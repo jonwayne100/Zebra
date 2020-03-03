@@ -223,8 +223,8 @@
     [[ZBAppDelegate tabBarController] closeQueue];
 }
 
-- (NSArray *)tasksToPerform {
-    NSMutableArray<NSArray *> *commands = [NSMutableArray new];
+- (NSArray <ZBStage *> *)tasksToPerform {
+    NSMutableArray <ZBStage *> *commands = [NSMutableArray new];
     NSArray *baseCommand;
     BOOL ignoreDependencies = [self containsPackageWithIgnoredDependencies]; //fallback to dpkg
     
@@ -306,6 +306,8 @@
                 ZBStage *stage = [[ZBStage alloc] init];
                 stage.type = ZBStageRemove;
                 stage.command = removeCommand;
+                
+                [commands addObject:stage];
             }
         }
     }
@@ -349,6 +351,8 @@
             ZBStage *stage = [[ZBStage alloc] init];
             stage.type = ZBStageInstall;
             stage.command = installCommand;
+            
+            [commands addObject:stage];
         }
     }
     
@@ -360,7 +364,12 @@
             
             NSArray *paths = [self pathsForPackagesInQueue:ZBQueueTypeReinstall];
             [reinstallCommand addObjectsFromArray:paths];
-            [commands addObject:reinstallCommand];
+            
+            ZBStage *stage = [[ZBStage alloc] init];
+            stage.type = ZBStageReinstall;
+            stage.command = reinstallCommand;
+            
+            [commands addObject:stage];
         }
         else if ([binary isEqualToString:@"/usr/bin/dpkg"]) {
             //Remove package first
@@ -371,7 +380,12 @@
             for (ZBPackage *package in [self reinstallQueue]) {
                 [removeCommand addObject:package.identifier];
             }
-            [commands addObject:removeCommand];
+            
+            ZBStage *removeStage = [[ZBStage alloc] init];
+            removeStage.type = ZBStageReinstall;
+            removeStage.command = removeCommand;
+            
+            [commands addObject:removeStage];
             
             //Install new version
             NSMutableArray *installCommand = [baseCommand mutableCopy];
@@ -382,6 +396,8 @@
             ZBStage *stage = [[ZBStage alloc] init];
             stage.type = ZBStageReinstall;
             stage.command = installCommand;
+            
+            [commands addObject:stage];
         }
     }
     
