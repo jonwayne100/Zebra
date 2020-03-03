@@ -230,60 +230,6 @@
             }
         
             [self executeNextStage];
-            
-            if (zebraModification) { //Zebra should be the last thing installed so here is our chance to install it.
-                
-                
-                
-                if (![ZBDevice needsSimulation]) {
-//                    NSTask *task = [[NSTask alloc] init];
-//                    [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
-//                    [task setArguments:baseCommand];
-//
-//                    NSPipe *outputPipe = [[NSPipe alloc] init];
-//                    NSFileHandle *output = [outputPipe fileHandleForReading];
-//                    [output waitForDataInBackgroundAndNotify];
-//                    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
-//
-//                    NSPipe *errorPipe = [[NSPipe alloc] init];
-//                    NSFileHandle *error = [errorPipe fileHandleForReading];
-//                    [error waitForDataInBackgroundAndNotify];
-//                    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
-//
-//                    [task setStandardOutput:outputPipe];
-//                    [task setStandardError:errorPipe];
-//
-//                    @try {
-//                        [task launch];
-//                        [task waitUntilExit];
-//
-//                        int terminationStatus = [task terminationStatus];
-//                        switch (terminationStatus) {
-//                            case EX_NOPERM:
-//                                [self writeToConsole:NSLocalizedString(@"Zebra was unable to complete this command because it does not have the proper permissions. Please verify the permissions located at /usr/libexec/zebra/supersling and report this issue on GitHub.", @"") atLevel:ZBLogLevelError];
-//                                break;
-//                            case EDEADLK:
-//                                [self writeToConsole:NSLocalizedString(@"ERROR: Unable to lock status file. Please try again.", @"") atLevel:ZBLogLevelError];
-//                                break;
-//                            case 85: //ERESTART apparently
-//                                [self writeToConsole:NSLocalizedString(@"ERROR: Process must be restarted. Please try again.", @"") atLevel:ZBLogLevelError];
-//                                    break;
-//                            default:
-//                                break;
-//                        }
-//                    } @catch (NSException *e) {
-//                        NSString *message = [NSString stringWithFormat:@"Could not complete %@ process. Reason: %@.", [ZBDevice packageManagementBinary],  e.reason];
-//
-//                        CLS_LOG(@"%@", message);
-//                        NSLog(@"[Zebra] %@", message);
-//                        [self writeToConsole:message atLevel:ZBLogLevelError];
-//                        [self writeToConsole:@"Please restart Zebra and see if the issue still persists. If so, please file an issue on GitHub." atLevel:ZBLogLevelInfo];
-//                    }
-                }
-                else {
-                    
-                }
-            }
         }
     }
 }
@@ -471,6 +417,8 @@
 }
 
 - (void)updateStage:(ZBStageType)stage {
+    if (currentStage == stage) return;
+    
     currentStage = stage;
     suppressCancel = stage != ZBStageDownload && stage != ZBStageFinished;
     
