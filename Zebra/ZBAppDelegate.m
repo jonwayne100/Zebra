@@ -232,6 +232,9 @@ static const NSInteger kZebraMaxTime = 60 * 60 * 24; // 1 day
         self.window.rootViewController = [[ZBRefreshViewController alloc] initWithDropTables:true];
     }
     
+    ZBCommand *command = [[ZBCommand alloc] initWithDelegate:nil];
+    [command executeCommands:@[@[@"uicache", @"-a"]] asRoot:false];
+    
     return YES;
 }
 

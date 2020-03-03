@@ -97,165 +97,92 @@
     }
 }
 
-+ (void)restartSpringBoard {
-    if (![self needsSimulation]) {
-        BOOL failed = NO;
-        
-        ZBCommand *command = [[ZBCommand alloc] initWithDelegate:nil];
-        if (@available(iOS 11.0, *)) {
-            //Try sbreload
-            
-            NSLog(@"[Zebra] Trying sbreload");
-            @try {
-                [self runCommandInPath:@"sbreload" asRoot:NO observer:nil];
-            }
-            @catch (NSException *e) {
-                CLS_LOG(@"Could not spawn sbreload. %@: %@", e.name, e.reason);
-                NSLog(@"[Zebra] Could not spawn sbreload. %@: %@", e.name, e.reason);
-                failed = YES;
-            }
-        }
-        else {
-            failed = YES; //sbreload hangs on < 10 apparently so we have to mark it as failed in order to continue
-        }
-        
-        //Try launchctl
-        if (failed) {
-            NSLog(@"[Zebra] Trying launchctl");
-            failed = NO;
-            
-            @try {
-                [self runCommandInPath:@"launchctl stop com.apple.backboardd" asRoot:YES observer:nil];
-            }
-            @catch (NSException *e) {
-                CLS_LOG(@"Could not spawn launchctl. %@: %@", e.name, e.reason);
-                NSLog(@"[Zebra] Could not spawn launchctl. %@: %@", e.name, e.reason);
-                failed = YES;
-            }
-        }
-        
-        //Try killall
-        if (failed) {
-            NSLog(@"[Zebra] Trying killall");
-            failed = NO;
-            
-            @try {
-                [self runCommandInPath:@"killall -9 backboardd" asRoot:YES observer:nil];
-            }
-            @catch (NSException *e) {
-                CLS_LOG(@"Could not spawn killall. %@: %@", e.name, e.reason);
-                NSLog(@"[Zebra] Could not spawn killall. %@: %@", e.name, e.reason);
-                failed = YES;
-            }
-        }
-        
-        if (failed) {
-            [ZBAppDelegate sendErrorToTabController:NSLocalizedString(@"Could not respring. Please respring manually.", @"")];
-        }
-    }
-}
-
-+ (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBCommandDelegate> * _Nullable)observer {
-    if (!arguments || [arguments count] == 0) {
-        NSString *command = @"uicache -a";
-        
-        @try {
-            [self runCommandInPath:command asRoot:NO observer:observer];
-        }
-        @catch (NSException *e) {
-            CLS_LOG(@"%@ Could not spawn uicache. Reason: %@", e.name, e.reason);
-            NSLog(@"[Zebra] %@ Could not spawn uicache. Reason: %@", e.name, e.reason);
-        }
-    }
-    else {
-        NSMutableString *command = [@"uicache" mutableCopy];
-        for (NSString *argument in arguments) {
-            [command appendString:@" "];
-            [command appendString:argument];
-        }
-        
-        @try {
-            [self runCommandInPath:command asRoot:NO observer:observer];
-        }
-        @catch (NSException *e) {
-            CLS_LOG(@"%@ Could not spawn uicache. Reason: %@", e.name, e.reason);
-            NSLog(@"[Zebra] %@ Could not spawn uicache. Reason: %@", e.name, e.reason);
-        }
-    }
-}
-
-//+ (void)runCommandInPath:(NSString *_Nonnull)command asRoot:(BOOL)sling observer:(NSObject <ZBCommandDelegate> *_Nullable)observer {
-//    NSDictionary *environmentDict = [[NSProcessInfo processInfo] environment];
-//    NSString *shellPath = [environmentDict objectForKey:@"SHELL"];
-//
-//    NSString *binary = [command componentsSeparatedByString:@" "][0];
-//    if (![self locateCommandInPath:binary shell:shellPath]) {
-//        NSException *exception = [NSException exceptionWithName:@"Binary not found" reason:[NSString stringWithFormat:@"%@ doesn't exist in $PATH", binary] userInfo:nil];
-//        @throw exception;
-//    }
-//
-//    NSTask *task = [[NSTask alloc] init];
-//
-//    if (sling) {
-//        [task setLaunchPath:@"/usr/libexec/zebra/supersling"];
-//        [task setArguments:@[shellPath, @"-c", command]];
-//    }
-//    else {
-//        [task setLaunchPath:shellPath];
-//        [task setArguments:@[@"-c", command]];
-//    }
-//
-//    if (observer) {
-//        NSPipe *outputPipe = [[NSPipe alloc] init];
-//        NSFileHandle *output = [outputPipe fileHandleForReading];
-//        [output waitForDataInBackgroundAndNotify];
-//        [[NSNotificationCenter defaultCenter] addObserver:observer selector:@selector(receivedData:) name:NSFileHandleDataAvailableNotification object:output];
-//        NSPipe *errorPipe = [[NSPipe alloc] init];
-//        NSFileHandle *error = [errorPipe fileHandleForReading];
-//        [error waitForDataInBackgroundAndNotify];
-//        [[NSNotificationCenter defaultCenter] addObserver:observer selector:@selector(receivedErrorData:) name:NSFileHandleDataAvailableNotification object:error];
-//
-//        [task setStandardOutput:outputPipe];
-//        [task setStandardError:errorPipe];
-//    }
-//
-//    @try {
-//        [task launch];
-//        [task waitUntilExit];
-//    }
-//    @catch (NSException *e) {
-//        CLS_LOG(@"%@ Could not spawn %@. Reason: %@", e.name, command, e.reason);
-//        NSLog(@"[Zebra] %@ Could not spawn %@. Reason: %@", e.name, command, e.reason);
-//        @throw e;
+//+ (void)restartSpringBoard {
+//    if (![self needsSimulation]) {
+//        BOOL failed = NO;
+//        
+//        ZBCommand *command = [[ZBCommand alloc] initWithDelegate:nil];
+//        if (@available(iOS 11.0, *)) {
+//            //Try sbreload
+//            
+//            NSLog(@"[Zebra] Trying sbreload");
+//            @try {
+//                [self runCommandInPath:@"sbreload" asRoot:NO observer:nil];
+//            }
+//            @catch (NSException *e) {
+//                CLS_LOG(@"Could not spawn sbreload. %@: %@", e.name, e.reason);
+//                NSLog(@"[Zebra] Could not spawn sbreload. %@: %@", e.name, e.reason);
+//                failed = YES;
+//            }
+//        }
+//        else {
+//            failed = YES; //sbreload hangs on < 10 apparently so we have to mark it as failed in order to continue
+//        }
+//        
+//        //Try launchctl
+//        if (failed) {
+//            NSLog(@"[Zebra] Trying launchctl");
+//            failed = NO;
+//            
+//            @try {
+//                [self runCommandInPath:@"launchctl stop com.apple.backboardd" asRoot:YES observer:nil];
+//            }
+//            @catch (NSException *e) {
+//                CLS_LOG(@"Could not spawn launchctl. %@: %@", e.name, e.reason);
+//                NSLog(@"[Zebra] Could not spawn launchctl. %@: %@", e.name, e.reason);
+//                failed = YES;
+//            }
+//        }
+//        
+//        //Try killall
+//        if (failed) {
+//            NSLog(@"[Zebra] Trying killall");
+//            failed = NO;
+//            
+//            @try {
+//                [self runCommandInPath:@"killall -9 backboardd" asRoot:YES observer:nil];
+//            }
+//            @catch (NSException *e) {
+//                CLS_LOG(@"Could not spawn killall. %@: %@", e.name, e.reason);
+//                NSLog(@"[Zebra] Could not spawn killall. %@: %@", e.name, e.reason);
+//                failed = YES;
+//            }
+//        }
+//        
+//        if (failed) {
+//            [ZBAppDelegate sendErrorToTabController:NSLocalizedString(@"Could not respring. Please respring manually.", @"")];
+//        }
 //    }
 //}
-
-+ (NSString *)locateCommandInPath:(NSString *)command shell:(NSString *)shellPath {
-    NSLog(@"[Zebra] Locating %@", command);
-    NSLog(@"[Zebra] Shell: %@", shellPath);
-    
-    NSTask *which = [[NSTask alloc] init];
-    [which setLaunchPath:shellPath];
-    [which setArguments:@[@"-c", [NSString stringWithFormat:@"which %@", command]]];
-
-    NSPipe *outPipe = [NSPipe pipe];
-    [which setStandardOutput:outPipe];
-
-    [which launch];
-    [which waitUntilExit];
-
-    NSFileHandle *read = [outPipe fileHandleForReading];
-    NSData *dataRead = [read readDataToEndOfFile];
-    NSString *stringRead = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
-    if ([stringRead containsString:@"not found"] || [stringRead isEqualToString:@""]) {
-        NSLog(@"[Zebra] Can't find %@", command);
-        return NULL;
-    }
-    
-    NSLog(@"[Zebra] %@ location: %@", command, stringRead);
-    
-    return stringRead;
-}
+//
+//+ (void)uicache:(NSArray *_Nullable)arguments observer:(NSObject <ZBCommandDelegate> * _Nullable)observer {
+//    if (!arguments || [arguments count] == 0) {
+//        NSString *command = @"uicache -a";
+//        
+//        @try {
+//            [self runCommandInPath:command asRoot:NO observer:observer];
+//        }
+//        @catch (NSException *e) {
+//            CLS_LOG(@"%@ Could not spawn uicache. Reason: %@", e.name, e.reason);
+//            NSLog(@"[Zebra] %@ Could not spawn uicache. Reason: %@", e.name, e.reason);
+//        }
+//    }
+//    else {
+//        NSMutableString *command = [@"uicache" mutableCopy];
+//        for (NSString *argument in arguments) {
+//            [command appendString:@" "];
+//            [command appendString:argument];
+//        }
+//        
+//        @try {
+//            [self runCommandInPath:command asRoot:NO observer:observer];
+//        }
+//        @catch (NSException *e) {
+//            CLS_LOG(@"%@ Could not spawn uicache. Reason: %@", e.name, e.reason);
+//            NSLog(@"[Zebra] %@ Could not spawn uicache. Reason: %@", e.name, e.reason);
+//        }
+//    }
+//}
 
 + (BOOL)_isRegularFile:(NSString *)path {
     BOOL isDir = NO;
