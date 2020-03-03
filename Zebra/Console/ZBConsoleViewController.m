@@ -116,6 +116,8 @@
     }
     
     if (currentStage == -1) { //Only run the process once per console cycle
+        if (!process) process = [[ZBProcess alloc] initWithDelegate:self];
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         });
