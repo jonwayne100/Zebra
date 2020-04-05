@@ -11,7 +11,7 @@ include $(THEOS)/makefiles/common.mk
 
 XCODEPROJ_NAME = Zebra
 
-# Zebra_XCODEFLAGS = PACKAGE_VERSION='@\"$(THEOS_PACKAGE_BASE_VERSION)\"'
+Zebra_XCODEFLAGS = PACKAGE_VERSION='@\"$(THEOS_PACKAGE_BASE_VERSION)\"'
 Zebra_XCODE_SCHEME = Zebra
 Zebra_CODESIGN_FLAGS = -SZebra/Zebra.entitlements
 
