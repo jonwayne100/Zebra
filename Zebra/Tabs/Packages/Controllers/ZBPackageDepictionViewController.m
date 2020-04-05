@@ -355,11 +355,8 @@ static const NSUInteger ZBPackageInfoOrderCount = 8;
                     if (info && info.purchased && info.available) {
                         self.purchased = YES;
                         self->package.sileoDownload = YES;
-                        [self showModifyButton:YES];
                     }
-                    else {
-                        [self showRemoveButton];
-                    }
+                    [self showModifyButton:YES];
                 }];
             }
             else {
@@ -390,7 +387,7 @@ static const NSUInteger ZBPackageInfoOrderCount = 8;
                     else {
                         //This behavior is NOT intended I don't think, packages should be available without logging in...
                         self->previousButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Sign In", @"") style:UIBarButtonItemStylePlain target:self action:@selector(signIn)];
-                        self->previousButton.enabled = true;
+                        self->previousButton.enabled = YES;
                         [self setNavigationButtonBusy:NO];
                         
                         self->navButtonsBeingConfigured = NO;
@@ -526,12 +523,15 @@ static const NSUInteger ZBPackageInfoOrderCount = 8;
                         switch (status) {
                             case -1: { //Failure
                                 [ZBAppDelegate sendAlertFrom:self message:NSLocalizedString(@"Could not complete purchase", @"")];
+                                break;
                             }
                             case 0: { //Immediate Success
                                 [self configureNavButton];
+                                break;
                             }
                             case 1: { //Interaction required
                                 [self initPurchaseLink:[NSURL URLWithString:result[@"url"]]];
+                                break;
                             }
                         }
                     }

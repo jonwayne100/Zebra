@@ -68,7 +68,7 @@ static const NSInteger kZebraMaxTime = 60 * 60 * 24; // 1 day
 }
 
 + (NSURL *)documentsDirectoryURL {
-    return [NSURL URLWithString:[NSString stringWithFormat:@"filza://%@", [self documentsDirectory]]];
+    return [NSURL URLWithString:[[NSString stringWithFormat:@"filza://view%@", [self documentsDirectory]] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
 }
 
 + (NSString *)listsLocation {
@@ -161,11 +161,11 @@ static const NSInteger kZebraMaxTime = 60 * 60 * 24; // 1 day
 }
 
 + (void)sendAlertFrom:(UIViewController *)vc message:(NSString *)message {
-    [self sendAlertFrom:vc title:@"Zebra" message:message actionLabel:nil okLabel:@"Ok" block:NULL];
+    [self sendAlertFrom:vc title:@"Zebra" message:message actionLabel:nil okLabel:NSLocalizedString(@"Ok", @"") block:NULL];
 }
 
 + (void)sendErrorToTabController:(NSString *)error actionLabel:(NSString *)actionLabel block:(void (^)(void))block {
-    [self sendAlertFrom:nil title:@"An Error Occurred" message:error actionLabel:actionLabel okLabel:@"Dismiss" block:block];
+    [self sendAlertFrom:nil title:NSLocalizedString(@"An Error Occurred", @"") message:error actionLabel:actionLabel okLabel:NSLocalizedString(@"Dismiss", @"") block:block];
 }
 
 + (void)sendErrorToTabController:(NSString *)error {
@@ -233,7 +233,7 @@ static const NSInteger kZebraMaxTime = 60 * 60 * 24; // 1 day
     [[ZBThemeManager sharedInstance] updateInterfaceStyle];
     
     if ([ZBDatabaseManager needsMigration]) {
-        self.window.rootViewController = [[ZBRefreshViewController alloc] initWithDropTables:true];
+        self.window.rootViewController = [[ZBRefreshViewController alloc] initWithDropTables:YES];
     }
     
     return YES;

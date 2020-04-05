@@ -115,7 +115,7 @@
 }
 
 - (void)goodbye {
-    [self dismissViewControllerAnimated:true completion:nil];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Search Results Updating Protocol
@@ -163,7 +163,7 @@
     self->shouldPerformSearching = YES;
     
     [self updateSearchResultsForSearchController:searchController];
-    [self.searchController setActive:false];
+    [self.searchController setActive:NO];
 }
 
 #pragma mark - Table View Data Source
@@ -191,28 +191,34 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"sectionSelectorCell"];
+    NSArray <NSString *> *authorDetail = authors[indexPath.row];
+    UITableViewCellStyle style = authorDetail[0].length && authorDetail[1].length ? UITableViewCellStyleSubtitle : UITableViewCellStyleDefault;
+    UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:style reuseIdentifier:@"sectionSelectorCell"];
     
-    NSArray *authorDetail = authors[indexPath.row];
-    cell.textLabel.text = authorDetail[0];
-    cell.textLabel.textColor = [UIColor primaryTextColor];
-    
-    cell.detailTextLabel.text = authorDetail[1];
-    cell.detailTextLabel.textColor = [UIColor secondaryTextColor];
+    if (style == UITableViewCellStyleSubtitle) {
+        cell.textLabel.text = authorDetail[0];
+        cell.textLabel.textColor = [UIColor primaryTextColor];
+        
+        cell.detailTextLabel.text = authorDetail[1];
+        cell.detailTextLabel.textColor = [UIColor secondaryTextColor];
+    } else {
+        cell.textLabel.text = authorDetail[0] ?: authorDetail[1];
+        cell.textLabel.textColor = [UIColor primaryTextColor];
+    }
 
-    cell.accessoryType = [[selectedAuthors allKeys] containsObject:authorDetail[1]] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+    cell.accessoryType = authorDetail[1].length && [[selectedAuthors allKeys] containsObject:authorDetail[1]] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [tableView deselectRowAtIndexPath:indexPath animated:true];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    NSArray *authorDetail = authors[indexPath.row];
+    NSArray <NSString *> *authorDetail = authors[indexPath.row];
     if ([selectedAuthors objectForKey:authorDetail[1]]) {
         [selectedAuthors removeObjectForKey:authorDetail[1]];
     }
-    else {
+    else if (authorDetail[1].length) {
         [selectedAuthors setObject:authorDetail[0] forKey:authorDetail[1]];
     }
     

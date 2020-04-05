@@ -50,7 +50,9 @@
     
     sources = [NSMutableArray new];
     for (NSString *baseFilename in baseFilenames) {
-        [sources addObject:[ZBSource sourceFromBaseFilename:baseFilename]];
+        ZBSource *source = [ZBSource sourceFromBaseFilename:baseFilename];
+        if (source == nil) continue;
+        [sources addObject:source];
     }
     [sources sortUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"label" ascending:YES]]];
     
@@ -159,7 +161,7 @@
         UIAlertAction *ok = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ok", @"") style:UIAlertActionStyleDefault handler:nil];
         [aliasList addAction:ok];
         
-        [self presentViewController:aliasList animated:true completion:nil];
+        [self presentViewController:aliasList animated:YES completion:nil];
     }
 }
 
@@ -192,7 +194,7 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [tableView deselectRowAtIndexPath:indexPath animated:true];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
     NSUInteger rowCount = [tableView numberOfRowsInSection:indexPath.section];
     BOOL lastRow = indexPath.row == rowCount - 1;
@@ -212,7 +214,7 @@
                 
                 UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:sectionPicker];
                 
-                [self presentViewController:nav animated:true completion:nil];
+                [self presentViewController:nav animated:YES completion:nil];
             }
             break;
         }
@@ -220,7 +222,7 @@
             if (!lastRow) {
                 ZBRepoSectionsListTableViewController *sections = [[ZBRepoSectionsListTableViewController alloc] initWithSource:sources[indexPath.row]];
                 
-                [[self navigationController] pushViewController:sections animated:true];
+                [[self navigationController] pushViewController:sections animated:YES];
             }
             else {
                 ZBSourceSelectTableViewController *sourcePicker = [[ZBSourceSelectTableViewController alloc] initWithSelectionType:ZBSourceSelectionTypeNormal limit:1];
@@ -237,7 +239,7 @@
                 
                 UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:sourcePicker];
                 
-                [self presentViewController:nav animated:true completion:nil];
+                [self presentViewController:nav animated:YES completion:nil];
             }
             break;
         }
@@ -255,7 +257,7 @@
                 
                 UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:authorPicker];
                 
-                [self presentViewController:nav animated:true completion:nil];
+                [self presentViewController:nav animated:YES completion:nil];
             }
             break;
             break;
@@ -289,10 +291,10 @@
             break;
         }
         case 2: {
-//            NSString *author = blockedAuthors[indexPath.row];
-//            [blockedAuthors removeObject:author];
-//
-//            [ZBSettings setBlockedAuthors:blockedAuthors];
+            NSString *author = [blockedAuthors allKeys][indexPath.row];
+            [blockedAuthors removeObjectForKey:author];
+
+            [ZBSettings setBlockedAuthors:blockedAuthors];
             [tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
             break;
         }

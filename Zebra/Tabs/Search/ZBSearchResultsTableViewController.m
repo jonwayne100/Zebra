@@ -37,6 +37,7 @@
     
     self.tableView.tableFooterView = [[UIView alloc] init]; // Hide seperators after last cell
     [self.tableView registerNib:[UINib nibWithNibName:@"ZBPackageTableViewCell" bundle:nil] forCellReuseIdentifier:@"packageTableViewCell"];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshTable) name:@"ZBDatabaseCompletedUpdate" object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -105,9 +106,9 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [tableView deselectRowAtIndexPath:indexPath animated:true];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    [[self navController] pushViewController:[self getPackageDepictionVC:indexPath] animated:true];
+    [[self navController] pushViewController:[self getPackageDepictionVC:indexPath] animated:YES];
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
