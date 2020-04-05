@@ -19,4 +19,7 @@ include $(THEOS_MAKE_PATH)/xcodeproj.mk
 
 SUBPROJECTS = Supersling
 
+after-stage::
+	$(FAKEROOT) chmod 6755 $(THEOS_STAGING_DIR)/usr/libexec/zebra/supersling
+
 include $(THEOS_MAKE_PATH)/aggregate.mk
